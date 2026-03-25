@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 20:29:35 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/25 01:51:44 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/03/26 00:52:42 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #define BUFFER_SIZE 10
 
@@ -60,81 +61,100 @@ void	ft_putstr(char *str)
 	write(1, str, ft_strlen(str));
 }
 
+int close_all(int *f1, ...)
+{
+	va_list	args;
+	int		*arg;
+
+	va_start(args, f1);
+	close(*f1);
+	while ((arg = va_arg(args, int *)))
+		close(*arg);
+	va_end(args);
+	return (1);
+}
+
 int	ft_popen(const char *file, char *const argv[], char type)
 {
 	int		ipp[2];
 	int		opp[2];
 	pid_t	pid;
 
-	if (file == NULL
-		|| argv == NULL || *argv == NULL
-		|| (type != 'r' && type != 'w'))
+	if ((type != 'r' && type != 'w')
+		|| file == NULL || argv == NULL || *argv == NULL)
 		return (-1);
-
-	if (pipe(ipp) == -1)
+	if (pipe(ipp) == -1
+		|| (pipe(opp) == -1 && close_all(ipp, ipp + 1, 0)))
 		return (-1);
-	if (pipe(opp) == -1)
-		return (close(ipp[0]), close(ipp[1]), -1);
-
 	pid = fork();
-	if (pid == -1)
-		return (close(ipp[0]), close(ipp[1]), close(opp[0]), close(opp[1]), -1);
+	if (pid == -1 && close_all(ipp, ipp + 1, opp, opp + 1, 0))
+		return (-1);
 	if (pid == 0)
 	{
-		close(ipp[1]);
-		close(opp[0]);
-
-		// OK I see... dup2(ipp[0], 0) == -1 || 
-		if (dup2(opp[1], 1) == -1)
-			(void)(close(ipp[0]), close(opp[0]), exit(1));
-		close(ipp[0]);
-		close(opp[1]);
-		if (execvp(argv[0], argv) == -1)
+		close_all(ipp + 1, opp, 0);
+		if ((type == 'w' && dup2(ipp[0], 0) == -1)
+			|| (type == 'r' && dup2(opp[1], 1) == -1))
+		{
+			close_all(ipp, opp + 1, 0);
+			exit(1);
+		}
+		if (close_all(ipp, opp + 1, 0) && execvp(file, argv) == -1)
 			exit(1);
 		exit(0);
 	}
-
-	if (type == 'r')
-	{
-		(void)(close(ipp[0]), close(ipp[1]), close(opp[1]));
+	if (type == 'r' && close_all(ipp, ipp + 1, opp + 1, 0))
 		return (opp[0]);
-	}
-	else if (type == 'w')
-	{
-		(void)(close(ipp[0]), close(opp[0]), close(opp[1]));
+	if (type == 'w' && close_all(ipp, opp, opp + 1, 0))
 		return (ipp[1]);
-	}
-
-	return (close(ipp[0]), close(ipp[1]), close(opp[0]), close(opp[1]), -1);
+ 	close_all(ipp, ipp + 1, opp, opp + 1, 0);
+	return (-1);
 }
 
-// int main(void)
+// int	main(void)
 // {
-//     int  fd;
-//     char *line;
-
-//     fd = ft_popen("ls", (char *const []){"ls", NULL}, 'r');
-//     while ((line = get_next_line(fd)))
+// 	char	*line;
+// 	int		fd;
+	
+// 	fd = ft_popen("ls", (char *const []){"ls", NULL}, 'r');
+// 	dup2(fd, 0);
+// 	fd = ft_popen("grep", (char *const []){"grep", "c", NULL}, 'r');
+	
+// 	while ((line = get_next_line(fd)))
 // 	{
-//         ft_putstr(line);
+// 		printf("%s", line);
 // 		free(line);
 // 	}
-//     return (0);
+// 	return (0);
 // }
 
+// r -> returns a fd that reads the OUTPUT of the command
+// w -> returns a fd that writes the INPUT of the command
 int	main(void)
 {
-	char	*line;
+	char	stash[BUFFER_SIZE];
+	int		bytes;
 	int		fd;
-	
-	fd = ft_popen("ls", (char *const []){"ls", NULL}, 'r');
-	dup2(fd, 0); // 25/03: It's him!
-	fd = ft_popen("grep", (char *const []){"grep", "c", NULL}, 'r');
-	
-	while ((line = get_next_line(fd)))
+	char	**strs;
+
+	for (int i = 0; i < BUFFER_SIZE; i++)
+		stash[i] = 0;
+	fd = ft_popen("ls", (char *const []){"ls", "-l", NULL}, 'r');
+	if (fd == -1)
+		return (1);
+	while ((bytes = read(fd, stash, BUFFER_SIZE)) > 0)
 	{
-		printf("%s", line);
-		free(line);
+		printf("%s", stash);
+		for (int i = 0; i < BUFFER_SIZE; i++)
+			stash[i] = 0;
 	}
+	close(fd);
+	strs = (char *[]){"Bonjour\n", "Hello\n", "Hej\n", "As-salamu alaykum\n",
+		"Konnichiwa\n", "Aba\n", NULL};
+	fd = ft_popen("nl", (char *const []){"nl", NULL}, 'w');
+	if (fd == -1)
+		return (1);
+	for (int i = 0; strs[i]; i++)
+		dprintf(fd, "%s", strs[i]);
+	close(fd);
 	return (0);
 }
