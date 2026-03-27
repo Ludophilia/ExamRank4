@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 20:29:35 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/26 00:52:42 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:00:57 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,9 +81,9 @@ int	ft_popen(const char *file, char *const argv[], char type)
 	pid_t	pid;
 
 	if ((type != 'r' && type != 'w')
-		|| file == NULL || argv == NULL || *argv == NULL)
-		return (-1);
-	if (pipe(ipp) == -1
+		|| file == NULL
+		|| argv == NULL || *argv == NULL
+		|| pipe(ipp) == -1
 		|| (pipe(opp) == -1 && close_all(ipp, ipp + 1, 0)))
 		return (-1);
 	pid = fork();
@@ -91,8 +91,8 @@ int	ft_popen(const char *file, char *const argv[], char type)
 		return (-1);
 	if (pid == 0)
 	{
-		close_all(ipp + 1, opp, 0);
-		if ((type == 'w' && dup2(ipp[0], 0) == -1)
+		if (close_all(ipp + 1, opp, 0) != 1
+			|| (type == 'w' && dup2(ipp[0], 0) == -1)
 			|| (type == 'r' && dup2(opp[1], 1) == -1))
 		{
 			close_all(ipp, opp + 1, 0);
@@ -100,14 +100,12 @@ int	ft_popen(const char *file, char *const argv[], char type)
 		}
 		if (close_all(ipp, opp + 1, 0) && execvp(file, argv) == -1)
 			exit(1);
-		exit(0);
 	}
 	if (type == 'r' && close_all(ipp, ipp + 1, opp + 1, 0))
 		return (opp[0]);
 	if (type == 'w' && close_all(ipp, opp, opp + 1, 0))
 		return (ipp[1]);
- 	close_all(ipp, ipp + 1, opp, opp + 1, 0);
-	return (-1);
+	return (close_all(ipp, ipp + 1, opp, opp + 1, 0), -1);
 }
 
 // int	main(void)
@@ -131,21 +129,21 @@ int	ft_popen(const char *file, char *const argv[], char type)
 // w -> returns a fd that writes the INPUT of the command
 int	main(void)
 {
-	char	stash[BUFFER_SIZE];
+	char	buffer[BUFFER_SIZE];
 	int		bytes;
 	int		fd;
 	char	**strs;
 
 	for (int i = 0; i < BUFFER_SIZE; i++)
-		stash[i] = 0;
+		buffer[i] = 0;
 	fd = ft_popen("ls", (char *const []){"ls", "-l", NULL}, 'r');
 	if (fd == -1)
 		return (1);
-	while ((bytes = read(fd, stash, BUFFER_SIZE)) > 0)
+	while ((bytes = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
-		printf("%s", stash);
+		printf("%s", buffer);
 		for (int i = 0; i < BUFFER_SIZE; i++)
-			stash[i] = 0;
+			buffer[i] = 0;
 	}
 	close(fd);
 	strs = (char *[]){"Bonjour\n", "Hello\n", "Hej\n", "As-salamu alaykum\n",
