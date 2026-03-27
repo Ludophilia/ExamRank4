@@ -1,1 +1,1 @@
-cc -Wall -Wextra -Werror picoshell.c -o pico
+cc -Wall -Wextra -Werror -g3 picoshell.c -o pico

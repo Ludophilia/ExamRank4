@@ -6,79 +6,87 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/27 01:47:12 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/03/28 00:52:21 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
-
-
 #include <stdio.h>
+
+// int main(void)
+// {
+//     int fds[2];
+    
+//     for (int i = 0; i < 3 ; i++)
+//     {
+//         pipe(fds);
+//         printf("fds[0] -> %i; fds[1] -> %i\n", fds[0], fds[1]);
+//         close(fds[0]); close(fds[1]);
+//     }
+
+//     return (0);
+// }
 
 int	picoshell(char **cmds[])
 {
-	// It's still a challenge by itself to find an efficient way to manage 
-	// those pipes...
-	int		pi[2], last_r;
+	int		wstatus, pi[2], prev_rpi;
 	pid_t	pid;
 
-	if (cmds == NULL) // more?
+	// NEXT:
+	// - Function argument error management
+	// - fd management
+	if (cmds == NULL)
 		return (1);
 
-	// cmds[0]... cmds[1]... cmds[n].
+	*(long *)pi = 0;
 	for (int i = 0; cmds[i]; i++)
 	{
-		//	cmds[0]: read in 0 (i == 0), write in pi[1],
-		//	cmds[1]: read in last_r (pi[0]), write in u_pi[1],
-		//  cmds[2]: read in last_r (pi[0]), write in 1,
-		
-		// (i + 1 != NULL)
-
-		last_r = (i == 0 ? 0 : pi[0]);
-	
+		// {cmds[0] <4---pipe---[3]>} {cmds[1] <6---pipe---[5]>} {cmds[2]
+		prev_rpi = (i == 0 ? 0 : pi[0]);
 		if (cmds[i + 1] != NULL && pipe(pi) == -1)
-			return (1); // close fds?
-		printf("==%i== Refreshed: pi[0] -> %i; pi[1] -> %i; last_r -> %i\n",
-			getpid(), pi[0], pi[1], last_r);
+			return (1);
+		// printf("==%i== Refreshed: pi[0] -> %i; pi[1] -> %i; prev_rpi -> %i\n",
+		// 	getpid(), pi[0], pi[1], prev_rpi);
 		pid = fork();
-		if (pid == -1)
-			return (1); // close fds?
+		if (pid == -1 && printf("e1\n"))
+			return (1);
 		if (pid == 0)
 		{
-			if (last_r != 0)
+			// (void)prev_rpi;
+			
+			if (pi[0] != 0 && pi[0] != prev_rpi)
 			{
-				printf("==%i== [%i] last_r -> %i\n", getpid(), i, last_r);
-				if (dup2(last_r, 0) == -1) // shit tier err management
-					return (printf("dup2 fail last r\n"), exit(1), 1);
-				close(last_r);
+				// printf("pi[0] -> %i\n", pi[0]);
+				close(pi[0]); //
+			}
+			if (prev_rpi != 0)
+			{
+				// printf("prev_rpi -> %i\n", prev_rpi);
+				if (dup2(prev_rpi, 0) == -1 && printf("e2\n"))
+					exit(1);
+				close(prev_rpi); //
 			}
 			if (cmds[i + 1] != NULL)
 			{
-				printf("==%i== [%i] pi[1] -> %i, pi[0] -> %i\n", getpid(), i, pi[1], pi[0]);
-				if (dup2(pi[1], 1) == -1) // shit tier err management
-					return (printf("dup2 fail last r\n"), exit(1), 1);
-				
-				
-					
-				close(pi[1]);
-				close(pi[0]);
+				if (dup2(pi[1], 1) == -1 && printf("e3\n"))
+					exit(1);
+				close(pi[1]); //
 			}
-			// execvp(cmds[i][0], cmds[i]);
-			// printf("i -> %i. IT DIDN'T WORK...\n", i);
-			// exit(1);
+			if (execvp(cmds[i][0], cmds[i]) == -1 && printf("e0\n"))
+				exit(1);
 			exit(0);
 		}
 		if (pid != 0)
 		{
-			int		wstatus;
-			
-			close(pi[1]);
-			close(last_r);
-			wait(&wstatus);
-			if (WEXITSTATUS(wstatus) == 1)
-				return (1); // close
+			if (pi[1] != 0)
+				close(pi[1]);
+			if (prev_rpi != 0)
+				close(prev_rpi);
+			if (wait(&wstatus) == -1
+				|| WEXITSTATUS(wstatus) == 1)
+				return (printf("e4\n"), 1);
 		}
 	}
 	return (0);
@@ -90,16 +98,22 @@ int	picoshell(char **cmds[])
 // squblblb
 int	main(void)
 {
-	// The argv array will be transformed to a
+	// The argv array will be transformed to a char	*** like those below
+	// following pipes position.
 	char	***cmds1, ***cmds2;
 
 	cmds1 = (char **[])
 	{
 		(char *[]){"echo", "squalala", NULL},
-		(char *[]){"cat", NULL},
 		(char *[]){"nl", NULL},
-		NULL,
-		(char *[]){"sed", "'s/a/b/g'", NULL},
+		(char *[]){"cat", NULL},
+		(char *[]){"tac", NULL},
+		(char *[]){"rev", NULL},
+		(char *[]){"tee", NULL},
+		(char *[]){"nl", NULL},
+		(char *[]){"rev", NULL},
+		(char *[]){"sed", "s/a/b/g", NULL},
+		(char *[]){"rev", NULL},
 		NULL
 	};
 	cmds2 = (char **[])
@@ -111,6 +125,7 @@ int	main(void)
 	if (picoshell(cmds1) == 1)
 		return (1);
 
+	(void)cmds1;
 	(void)cmds2;
 
 	return (0);
