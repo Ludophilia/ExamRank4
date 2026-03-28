@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/28 00:52:21 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/03/28 02:08:21 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,78 +15,71 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// int main(void)
-// {
-//     int fds[2];
-    
-//     for (int i = 0; i < 3 ; i++)
-//     {
-//         pipe(fds);
-//         printf("fds[0] -> %i; fds[1] -> %i\n", fds[0], fds[1]);
-//         close(fds[0]); close(fds[1]);
-//     }
+int	smrt_close(int *fd)
+{
+	close(*fd);
+	*fd = 0;
+	return (1);
+}
 
-//     return (0);
-// }
+int close_all(int pi[2], int prev_rpi)
+{
+	if (pi[0] != 0 && pi[0] != prev_rpi)
+		close(pi[0]);
+	if (prev_rpi != 0)
+		close(prev_rpi);
+	if (pi[1] != 0)
+		close(pi[1]);	
+	return (1);
+}
 
+// printf("==%i== Refreshed: pi[0] -> %i; pi[1] -> %i; prev_rpi -> %i\n",
+// 	getpid(), pi[0], pi[1], prev_rpi);
 int	picoshell(char **cmds[])
 {
-	int		wstatus, pi[2], prev_rpi;
+	int		wstatus, pi[2] = {0, 0}, prev_rpi = 0;
 	pid_t	pid;
 
-	// NEXT:
-	// - Function argument error management
-	// - fd management
-	if (cmds == NULL)
+	if (cmds == NULL || *cmds == NULL)
 		return (1);
-
-	*(long *)pi = 0;
+	// {cmds[0] <4---pipe---[3]>} {cmds[1] <6---pipe---[5]>} {cmds[2]
 	for (int i = 0; cmds[i]; i++)
 	{
-		// {cmds[0] <4---pipe---[3]>} {cmds[1] <6---pipe---[5]>} {cmds[2]
+		if (cmds[i] == NULL || cmds[i][0] == NULL)
+			return (close_all(pi, prev_rpi), 1);
 		prev_rpi = (i == 0 ? 0 : pi[0]);
-		if (cmds[i + 1] != NULL && pipe(pi) == -1)
+		if (cmds[i + 1] != NULL && pipe(pi) == -1 && close_all(pi, prev_rpi))
 			return (1);
-		// printf("==%i== Refreshed: pi[0] -> %i; pi[1] -> %i; prev_rpi -> %i\n",
-		// 	getpid(), pi[0], pi[1], prev_rpi);
 		pid = fork();
-		if (pid == -1 && printf("e1\n"))
+		if (pid == -1 && close_all(pi, prev_rpi))
 			return (1);
 		if (pid == 0)
 		{
-			// (void)prev_rpi;
-			
 			if (pi[0] != 0 && pi[0] != prev_rpi)
-			{
-				// printf("pi[0] -> %i\n", pi[0]);
-				close(pi[0]); //
-			}
+				smrt_close(pi + 0);
 			if (prev_rpi != 0)
 			{
-				// printf("prev_rpi -> %i\n", prev_rpi);
-				if (dup2(prev_rpi, 0) == -1 && printf("e2\n"))
+				if (dup2(prev_rpi, 0) == -1 && close_all(pi, prev_rpi))
 					exit(1);
-				close(prev_rpi); //
+				smrt_close(&prev_rpi);
 			}
 			if (cmds[i + 1] != NULL)
 			{
-				if (dup2(pi[1], 1) == -1 && printf("e3\n"))
+				if (dup2(pi[1], 1) == -1 && close_all(pi, prev_rpi))
 					exit(1);
-				close(pi[1]); //
+				smrt_close(pi + 1);
 			}
-			if (execvp(cmds[i][0], cmds[i]) == -1 && printf("e0\n"))
+			if (execvp(cmds[i][0], cmds[i]) == -1 && close_all(pi, prev_rpi))
 				exit(1);
-			exit(0);
 		}
 		if (pid != 0)
 		{
 			if (pi[1] != 0)
-				close(pi[1]);
+				smrt_close(pi + 1);
 			if (prev_rpi != 0)
-				close(prev_rpi);
-			if (wait(&wstatus) == -1
-				|| WEXITSTATUS(wstatus) == 1)
-				return (printf("e4\n"), 1);
+				smrt_close(&prev_rpi);
+			if (wait(&wstatus) == -1 || WEXITSTATUS(wstatus) == 1)
+				return (close_all(pi, prev_rpi), 1);
 		}
 	}
 	return (0);
@@ -104,22 +97,21 @@ int	main(void)
 
 	cmds1 = (char **[])
 	{
-		(char *[]){"echo", "squalala", NULL},
+		(char *[]){"last", NULL},
 		(char *[]){"nl", NULL},
-		(char *[]){"cat", NULL},
+		(char *[]){"head", "-5", NULL},
 		(char *[]){"tac", NULL},
 		(char *[]){"rev", NULL},
 		(char *[]){"tee", NULL},
-		(char *[]){"nl", NULL},
 		(char *[]){"rev", NULL},
 		(char *[]){"sed", "s/a/b/g", NULL},
-		(char *[]){"rev", NULL},
 		NULL
 	};
 	cmds2 = (char **[])
 	{
 		(char *[]){"/bin/ls", NULL},
 		(char *[]){"/usr/bin/grep", "picoshell", NULL},
+		(char *[]){"rev", NULL},
 		NULL
 	};
 	if (picoshell(cmds1) == 1)
