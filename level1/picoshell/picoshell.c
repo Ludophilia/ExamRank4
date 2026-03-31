@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/28 02:08:21 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/03/30 20:16:37 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	picoshell(char **cmds[])
 	int		wstatus, pi[2] = {0, 0}, prev_rpi = 0;
 	pid_t	pid;
 
-	if (cmds == NULL || *cmds == NULL)
+	if (cmds == NULL)
 		return (1);
 	// {cmds[0] <4---pipe---[3]>} {cmds[1] <6---pipe---[5]>} {cmds[2]
 	for (int i = 0; cmds[i]; i++)
