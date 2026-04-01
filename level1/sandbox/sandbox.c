@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 20:40:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/01 02:18:30 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/01 21:24:14 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,14 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
 	pid_t	pid;
 	int		wstatus;
 
-	if (f == NULL)
+	if (f == NULL || timeout == 0)
 		return (-1);
 	pid = fork();
 	if (pid == -1)
@@ -31,10 +32,10 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	if (pid == 0)
 	{
 		alarm(timeout);
-		f(); // ???
-		exit(0); // ???
+		f();
+		exit(0);
 	}
-	if (waitpid(pid, &wstatus, NULL) == -1)
+	if (waitpid(pid, &wstatus, 0) == -1)
 		return (-1);
 	if (WIFEXITED(wstatus))
 	{
@@ -62,16 +63,20 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	return (-1);
 }
 
-// - Will return 1 if f is nice, 0 if f is bad or -1 in case of an error 
-// in your function.
-// - A function is considered bad if:
-//	 	- it is terminated or stopped by a signal (segfault, abort...), 
-// 		- it exits with any other exit code than 0
-//  	- or it times out.
+void	test_sigabort(void) { abort(); }
 
-void	test_abort(void) { abort(); }
+void	test_sigkill(void) { kill(getpid(), SIGKILL); }
 
-void	test_sigkill(void) { kill(getpid, SIGKILL); }
+void	test_sigfpe(void) { int zero = 0, wtf = 42 / zero; (void)wtf; }
+
+void	test_sigterm(void) { raise(SIGTERM); }
+
+void	test_sigint(void) { raise(SIGINT); }
+
+void	test_sigquit(void) { raise(SIGQUIT); }
+
+void	test_sigpipe(void) { int fds[2]; pipe(fds); close(fds[0]); 
+	write(fds[1], "42", 2); close(fds[1]); }
 
 void	test_segfault(void) { *(int *)0 = 42; }
 
@@ -83,7 +88,5 @@ void	test_timeout(void) { pause(); }
 
 int	main(void)
 {
-	sandbox(test_exit_42, 0, true);
-
-	// assert.h 
+	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 1, true));
 }
