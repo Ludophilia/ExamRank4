@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 22:19:49 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/02 00:25:47 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/02 01:52:11 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@ int	vbc(char *expr)
 {
 	
 }
+
+// expr   ::= term ( '+' term )*
+// term   ::= factor ( '*' factor )*
+// factor ::= digit | '(' expr ')'
 
 int	main(int argc, char **argv)
 {
