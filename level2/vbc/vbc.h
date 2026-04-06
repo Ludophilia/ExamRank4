@@ -6,35 +6,34 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 21:48:57 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/06 15:02:02 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/06 18:40:39 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <stdio.h>
-// #include <malloc.h> // change this to <stdlib.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
 
-enum e_type
+typedef enum e_nodetype
 {
 	ADD,
 	MULTI,
 	VAL
-};
+}	t_noty;
 
 typedef struct node
 {
-	enum e_type		type;
+	t_noty			type;
 	int				val;
 	struct node 	*l;
 	struct node 	*r;
 }	node;
 
 // TREE
-node    *new_node(enum e_type type);
+node    *new_node(t_noty type);
 void    destroy_tree(node *n);
 
 // ERROR
@@ -47,7 +46,6 @@ int		expect(char **s, char c);
 node    *parse_expr(char **s);
 node	*parse_term(char **s);
 node	*parse_factor(char **s);
-
 
 // EVAL
 int		eval_tree(node *tree);

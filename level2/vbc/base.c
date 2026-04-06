@@ -20,7 +20,7 @@
 // node *n(**s); // ???
 
 // TREE
-node    *new_node(enum e_type type)
+node    *new_node(t_noty type)
 {
 	node *ret = calloc(1, sizeof(node));
 	if (!ret)
@@ -50,14 +50,6 @@ void    unexpected(char c)
         printf("Unexpected end of input\n");
 }
 
-int expect(char **s, char c)
-{
-    if (accept(s, c))
-        return (1);
-    unexpected(**s);
-    return (0);
-}
-
 int accept(char **s, char c)
 {
     if (**s == c) // Was: if (**s)
@@ -68,7 +60,13 @@ int accept(char **s, char c)
     return (0);
 }
 
-
+int expect(char **s, char c)
+{
+    if (accept(s, c))
+        return (1);
+    unexpected(**s);
+    return (0);
+}
 
 // PARSING
 
