@@ -1,1 +1,1 @@
-cc -Wall -Wextra -Werror -g3 vbc.c base.c -o vbc
+cc -Wall -Wextra -Werror -g3 parser.c base.c -o vbc

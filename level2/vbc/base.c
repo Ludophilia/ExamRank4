@@ -1,4 +1,4 @@
-/* PART OF THE ASSIGNMENT. I DIDN'T WRITE THIS. */
+/* PART OF THE ASSIGNMENT. I DIDN'T WRITE MOST OF IT. */
 
 // #include <stdio.h>
 // #include <malloc.h> // change this to <stdlib.h>
@@ -20,12 +20,12 @@
 // node *n(**s); // ???
 
 // TREE
-node    *new_node(node n)
+node    *new_node(enum e_type type)
 {
-	node *ret = calloc(1, sizeof(n));
+	node *ret = calloc(1, sizeof(node));
 	if (!ret)
 		return (NULL);
-	*ret = n;
+	ret->type = type;
 	return (ret);
 }
 
@@ -50,16 +50,6 @@ void    unexpected(char c)
         printf("Unexpected end of input\n");
 }
 
-static int accept(char **s, char c)
-{
-    if (**s)
-    {
-        (*s)++;
-        return (1);
-    }
-    return (0);
-}
-
 int expect(char **s, char c)
 {
     if (accept(s, c))
@@ -68,21 +58,33 @@ int expect(char **s, char c)
     return (0);
 }
 
+int accept(char **s, char c)
+{
+    if (**s == c) // Was: if (**s)
+    {
+        (*s)++;
+        return (1);
+    }
+    return (0);
+}
+
+
+
 // PARSING
 
 //...
 
-node    *parse_expr(char *s)
-{
-    //...
+// node    *parse_expr(char *s)
+// {
+//     //...
 
-    if (*s) 
-    {
-        destroy_tree(ret);
-        return (NULL);
-    }
-    return (ret);
-}
+//     if (*s) 
+//     {
+//         destroy_tree(ret);
+//         return (NULL);
+//     }
+//     return (ret);
+// }
 
 // EVAL
 

@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 21:48:57 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/03 00:13:14 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/05 21:58:38 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,24 +18,29 @@
 #include <ctype.h>
 #include <unistd.h>
 
-typedef struct node {
-	enum {
-		ADD,
-		MULTI,
-		VAL
-	}	type;
-	int		val;
-	struct node *l;
-	struct node *r;
+enum e_type
+{
+	ADD,
+	MULTI,
+	VAL
+};
+
+typedef struct node
+{
+	enum e_type		type;
+	int				val;
+	struct node 	*l;
+	struct node 	*r;
 }	node;
 
 // TREE
-node    *new_node(node n);
+node    *new_node(enum e_type type);
 void    destroy_tree(node *n);
 
 // ERROR
 
 void    unexpected(char c);
+int		accept(char **s, char c);
 int		expect(char **s, char c);
 
 // PARSING
