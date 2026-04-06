@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 21:48:57 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/05 21:58:38 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/06 15:02:02 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,10 @@ int		accept(char **s, char c);
 int		expect(char **s, char c);
 
 // PARSING
-node    *parse_expr(char *s);
+node    *parse_expr(char **s);
+node	*parse_term(char **s);
+node	*parse_factor(char **s);
+
 
 // EVAL
 int		eval_tree(node *tree);

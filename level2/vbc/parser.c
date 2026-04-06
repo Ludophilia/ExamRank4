@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 22:19:49 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/06 02:01:29 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/06 15:26:40 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,13 @@ What to do??
 
 
 
-/* Use that example to see if
+/* Use those examples to see if it works...
+
+1 + 1
+
+         ADD(+)
+		 /   \
+	  VAL(2)  VAL(3)
 
 (2 + 3)
 
@@ -101,9 +107,11 @@ What to do??
 */
 
 // Error management later....
-node    *parse_expr(char *s)
+node    *parse_expr(char **s)
 {
 	node	*node, *new;
+
+	printf("[parse_expr] s: %s\n", *s);
 	
     // if (*s == 0) // Unsure... Was: if (*s)
     // {
@@ -115,13 +123,16 @@ node    *parse_expr(char *s)
 	// if (node == NULL) // ???
 	// 	return (NULL); // destroy_tree(node), 
 	// supposing that pointer would have moved
+	printf("[parse_expr] s: %s\n", *s);
 
-	while (*s == '+')
+	while (**s == '+')
 	{
+		
 		// error management
-		accept(&s, '+'); // ???
+		accept(s, '+'); // ???
 
 		new = new_node(ADD);
+		printf("new ADD node... at: %s\n", *s);
 		// if (new == NULL);
 		// 	return (NULL);
 
@@ -134,7 +145,7 @@ node    *parse_expr(char *s)
     return (node);
 }
 
-node	*parse_term(char *s)
+node	*parse_term(char **s)
 {
 	node *node, *new;
 
@@ -143,45 +154,47 @@ node	*parse_term(char *s)
 	// 	return (NULL);
 	
 	// ???
-	while (*s == '*')
+	while (**s == '*')
 	{
 		// error management
-		accept(&s, '*'); // ???
+		accept(s, '*'); // ???
 
 		new = new_node(MULTI);
 		// if (new == NULL);
 		// 	return (NULL);
 
 		new->l = node;
-		new->r = parse_term(s);
+		new->r = parse_factor(s);
 
 		node = new;
 	}
 	return (node);
 }
 
-node	*parse_factor(char *s)
+node	*parse_factor(char **s)
 {
 	node	*node;
 
 	// parse_digit
-	if (isdigit(*s)) // Error management?
+	if (isdigit(**s)) // Error management?
 	{
 		node = new_node(VAL);
-		if (node == NULL)
-			return (NULL); // ???
-		node->val = (*s - '0');
-		accept(&s, *s); // Move to the next token???
+		// if (node == NULL)
+		// 	return (NULL); // ???
+		node->val = (**s - '0');
+		printf("new node val: %i\n", node->val);
+		accept(s, **s); // Move to the next token???
 		// return (node);
+		printf("[parse_factor] s: %s\n", *s);
 	}
 	// parse_expr
-	if (*s == '(') // Really?
+	if (**s == '(') // Really?
 	{
-		accept(&s, '('); // ???
+		accept(s, '('); // ???
 		node = parse_expr(s);
-		if (node == NULL)
-			return (NULL); // ???
-		expect(&s, ')');
+		// if (node == NULL)
+		// 	return (NULL); // ???
+		expect(s, ')');
 	}
 
 	// ???
@@ -194,7 +207,7 @@ int main(int argc, char **argv)
 {
     if (argc != 2)
         return (1);
-    node *tree = parse_expr(argv[1]);
+    node *tree = parse_expr(argv + 1);
     if (!tree)
         return (1);
 
