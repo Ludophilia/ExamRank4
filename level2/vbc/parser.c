@@ -6,13 +6,14 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 22:19:49 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/07 01:37:46 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/07 22:56:55 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "vbc.h"
 
-/* GRAMMAR RULES.
+/* GRAMMAR RULES
+
 A set of symbols and production rules, ie, symbols that can be replaced by
 other symbols down to the terminals in the formal language
 The recursive descent parser translate those productions rules to functions
@@ -59,33 +60,30 @@ Error management: After '+' consumed, there's supposed to be something...
 
 What could possibly go wrong?
 
-- [o] Empty input: ./vbc ""
+	- [o] Empty input: ./vbc ""
 
-- [o] Missing operand with + or *: ./vbc "+3"; ./vbc "2*".
-	- [ ] Expected token after '+' or '*': digit 
+	- [o] Missing operand with + or *: ./vbc "+3"; ./vbc "2*".
+		- [ ] Expected token after '+' or '*': digit 
 
-- [o] Missing opening, closing parentheses: ./vbc "4("; ./vbc "3)"
-	- [ ] Expected token after '(': '(', digit 
-	- [ ] Expected token after ')': ')', null, '+', '*' 
+	- [o] Missing opening, closing parentheses: ./vbc "4("; ./vbc "3)"
+		- [ ] Expected token after '(': '(', digit 
+		- [ ] Expected token after ')': ')', null, '+', '*' 
 
-- [o] Wrong starting character
-	- [ ] Expected token at start: digit or '('
+	- [o] Wrong starting character
+		- [ ] Expected token at start: digit or '('
 
-- [o] Wrong ending character
-	- [ ] Expected token at end: null
-	
-- [o] allocation errors
-*/ 
+	- [o] Foreign symbol: outside ['0'..'9'], '(', ')', '+', '*'...
+	- [o] Wrong ending character
+		- [ ] Expected token at end: null
+		
+	- [o] allocation errors
+
+*/
 
 node    *parse_expr(char **s)
 {
 	node	*node, *new;
 
-	// if (*s == 0) // Unsure... Was: if (*s)
-	// {
-	//     destroy_tree(node);
-	//     return (NULL);
-	// }
 	node = parse_term(s);
 	if (node == NULL)
 		return (NULL);
@@ -153,20 +151,15 @@ node	*parse_factor(char **s)
 	return (NULL);
 }
 
-
 int main(int argc, char **argv)
 {
 	if (argc != 2)
 		return (1);
-	// printf("argc -> %i\n", argc);
-	// printf("[MAIN] argv[1] -> %s\n", argv[1]);
 	node *tree = parse_expr(argv + 1);
 	if (!tree)
 		return (1);
-	// printf("[MAIN] argv[1] -> '%s'\n", argv[1]);
 	if (expect(argv + 1, 0) == 0)
 		return (destroy_tree(tree), 1);
-	//....
 	printf("%d\n", eval_tree(tree));
 	destroy_tree(tree);
 	return (0);
