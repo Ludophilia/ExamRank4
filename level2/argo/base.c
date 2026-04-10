@@ -1,35 +1,37 @@
-/* Part of the assignment, I didn't write this.*/
+/* Part of the assignment, I didn't write most of it.*/
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
+#include "argo.h"
+// #include <stdio.h>
+// #include <stdbool.h>
+// #include <ctype.h>
+// #include <string.h>
+// #include <stdlib.h>
 
+// typedef struct	json {
+// 	enum {
+// 		MAP,
+// 		INTEGER,
+// 		STRING
+// 	} type;
+// 	union {
+// 		struct {
+// 			struct pair	*data;
+// 			size_t		size;
+// 		} map;
+// 		int	integer;
+// 		char	*string;
+// 	};
+// }	json;
 
-typedef struct	json {
-	enum {
-		MAP,
-		INTEGER,
-		STRING
-	} type;
-	union {
-		struct {
-			struct pair	*data;
-			size_t		size;
-		} map;
-		int	integer;
-		char	*string;
-	};
-}	json;
+// typedef struct	pair {
+// 	char	*key;
+// 	json	value;
+// }	pair;
 
-typedef struct	pair {
-	char	*key;
-	json	value;
-}	pair;
-
-// void	free_json(json j); // WTF?
+// void	free_json(json j);
 // int	argo(json *dst, FILE *stream);
+
+// PARSING + ERROR
 
 int	peek(FILE *stream)
 {
@@ -64,6 +66,8 @@ int	expect(FILE *stream, char c)
 	return 0;
 }
 
+// RESSOURCES MANAGEMENT
+
 void	free_json(json j)
 {
 	switch (j.type)
@@ -84,6 +88,8 @@ void	free_json(json j)
 	}
 }
 
+// SERIALIZATION: flatten the json in a series of character strings 
+// for display on the terminal.
 void	serialize(json j)
 {
 	switch (j.type)
@@ -116,22 +122,18 @@ void	serialize(json j)
 	}
 }
 
-// Here?
-int	argo(json *dst, FILE *stream);
-
-
-int	main(int argc, char **argv)
-{
-	if (argc != 2)
-		return 1;
-	char *filename = argv[1];
-	FILE *stream = fopen(filename, "r");
-	json	file;
-	if (argo (&file, stream) != 1)
-	{
-		free_json(file);
-		return 1;
-	}
-	serialize(file);
-	printf("\n");
-}
+// int	main(int argc, char **argv)
+// {
+// 	if (argc != 2)
+// 		return 1;
+// 	char *filename = argv[1];
+// 	FILE *stream = fopen(filename, "r");
+// 	json	file;
+// 	if (argo (&file, stream) != 1)
+// 	{
+// 		free_json(file);
+// 		return 1;
+// 	}
+// 	serialize(file);
+// 	printf("\n");
+// }
