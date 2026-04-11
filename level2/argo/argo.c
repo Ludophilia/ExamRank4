@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/10 02:01:49 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/11 22:04:42 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,18 @@ What contains what basically, what are the terminals, where is the mutual
 recursion case that justifies RECURSIVE descent parsing...
 
 Start from the terminals maybe?
+
+
+value ::= integer | string | map
+map ::= '{' (pair (',' pair)*)? '}'
+pair ::= string ':' value
+
+integer ::= digit+
+string ::= '"' character* '"'
+
+digit ::= '0' | ... | '9'
+character ::= ascii<32,127>
+ascii<32,127> ::=  ' ' | ... | DEL 
 
 */
 
