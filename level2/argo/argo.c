@@ -6,13 +6,12 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/11 22:04:42 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/15 02:46:17 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argo.h"
 
-int	argo(json *dst, FILE *stream);
 
 /* Can you use the examples and show how the json is translated from its
 javascript / rfc8259 form to its C form? 
@@ -99,7 +98,6 @@ recursion case that justifies RECURSIVE descent parsing...
 
 Start from the terminals maybe?
 
-
 value ::= integer | string | map
 map ::= '{' (pair (',' pair)*)? '}'
 pair ::= string ':' value
@@ -112,6 +110,89 @@ character ::= ascii<32,127>
 ascii<32,127> ::=  ' ' | ... | DEL 
 
 */
+
+int parse_value(json *dst, FILE *stream)
+{
+	// That's just the outline. Nothing works...
+	int c = peek(stream);
+
+	// if c == EOF... (error or end)
+	
+	if (isdigit(c))
+	{
+		parse_integer(dst, stream);
+		// no expect?
+	}
+	else if (c == '"')
+	{
+		parse_string(dst, stream);
+		// -> expect '"' (later)
+	}
+	else if (c == '{')
+	{
+		parse_map(dst, stream);
+		// -> expect '}' (later)
+	}
+	return (0);// ??? 
+}
+
+// '"bonjour"'
+// => (json){.type = STRING, .string = "bonjour"};
+int	parse_string(json *dst, FILE *stream)
+{
+	// How do you know if a JSON should be allocated or not?
+	// We start from a json allocated on stack, or at least something we don't
+	// control...
+	int	len;
+	// char	str[]
+	
+	dst->type = STRING;
+	// fscanf(stream, "%d", &dst->integer);
+
+	return (0); // ???
+}
+
+// int	parse_map(json *dst, FILE *stream)
+
+
+// '1'
+// => (json){.type = INTEGER, .integer = 1};
+int	parse_integer(json *dst, FILE *stream)
+{
+	// How do you know a JSON should be allocated or not?
+	// We start from a json allocated on stack, or at least something we don't
+	// control...
+	dst->type = INTEGER;
+	// Does this move the filepos? It seems like it...
+	fscanf(stream, "%d", &dst->integer);
+	return (0); // ???
+
+}
+
+int	argo(json *dst, FILE *stream)
+{
+	// What to do?
+
+	// = Just try to write the code for the happy path
+	// = Then manage the errors...
+
+	// --------------------------
+
+	// stream (FILE *stream) reads stdin in most examples...
+
+	// Token to token (LL(1))
+	// => getc (getc(FILE *stream))
+
+	// --------------------------
+
+	// dst is a pointer to the json structure
+	// json is type / (map | integer | string)
+
+	parse_value(dst, stream); // ???
+
+	return (1);
+}
+
 
 int	main(int argc, char **argv)
 {
