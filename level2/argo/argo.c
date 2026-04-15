@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/15 02:46:17 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/15 22:26:21 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,51 +123,67 @@ int parse_value(json *dst, FILE *stream)
 		parse_integer(dst, stream);
 		// no expect?
 	}
-	else if (c == '"')
-	{
-		parse_string(dst, stream);
-		// -> expect '"' (later)
-	}
-	else if (c == '{')
-	{
-		parse_map(dst, stream);
-		// -> expect '}' (later)
-	}
+	// else if (c == '"')
+	// {
+	// 	parse_string(dst, stream);
+	// 	// -> expect '"' (later)
+	// }
+	// else if (c == '{')
+	// {
+	// 	parse_map(dst, stream);
+	// 	// -> expect '}' (later)
+	// }
 	return (0);// ??? 
 }
 
-// '"bonjour"'
-// => (json){.type = STRING, .string = "bonjour"};
-int	parse_string(json *dst, FILE *stream)
-{
-	// How do you know if a JSON should be allocated or not?
-	// We start from a json allocated on stack, or at least something we don't
-	// control...
-	int	len;
-	// char	str[]
-	
-	dst->type = STRING;
-	// fscanf(stream, "%d", &dst->integer);
-
-	return (0); // ???
-}
-
-// int	parse_map(json *dst, FILE *stream)
-
+// How do you know a JSON should be allocated or not?
+// We start from a json allocated on stack, or at least something we don't
+// control...
 
 // '1'
 // => (json){.type = INTEGER, .integer = 1};
 int	parse_integer(json *dst, FILE *stream)
 {
-	// How do you know a JSON should be allocated or not?
-	// We start from a json allocated on stack, or at least something we don't
-	// control...
-	dst->type = INTEGER;
-	// Does this move the filepos? It seems like it...
-	fscanf(stream, "%d", &dst->integer);
-	return (0); // ???
+	int	nbr, c;
 
+	// Alt: fscanf(stream, "%d", &dst->integer); TEST IT ;)
+	nbr = 0;
+	dst->type = INTEGER;
+	c = peek(stream);
+	// if (c == EOF)
+		// error
+	while (c != EOF && isdigit(c))
+	{
+		consume(stream);
+		nbr = 10 * nbr + (c - '0');
+		c = peek(stream);
+		// if (c == EOF)
+			// error
+	}
+	dst->integer = nbr;
+	return (0);
 }
+
+// '"bonjour"'
+// => (json){.type = STRING, .string = "bonjour"};
+// int	parse_string(json *dst, FILE *stream)
+// {
+// 	// How do you know if a JSON should be allocated or not?
+// 	// We start from a json allocated on stack, or at least something we don't
+// 	// control...
+// 	int	len;
+// 	// char	str[]
+	
+// 	dst->type = STRING;
+// 	// fscanf(stream, "%d", &dst->integer);
+
+// 	return (0); // ???
+// }
+
+// // int	parse_map(json *dst, FILE *stream)
+
+
+
 
 int	argo(json *dst, FILE *stream)
 {
@@ -187,9 +203,7 @@ int	argo(json *dst, FILE *stream)
 
 	// dst is a pointer to the json structure
 	// json is type / (map | integer | string)
-
-	parse_value(dst, stream); // ???
-
+	parse_value(dst, stream); // Next, return -1 for failure.
 	return (1);
 }
 

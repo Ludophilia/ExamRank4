@@ -33,6 +33,11 @@
 
 // PARSING + ERROR
 
+int	consume(FILE *stream)
+{
+	return getc(stream);
+}
+
 int	peek(FILE *stream)
 {
 	int	c = getc(stream);

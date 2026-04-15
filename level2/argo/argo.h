@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:30:12 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/10 00:58:11 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/15 22:28:23 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,9 @@ typedef struct	pair {
 	json	value;
 }	pair;
 
+
+
+int		consume(FILE *stream);
 int		peek(FILE *stream);
 void	unexpected(FILE *stream);
 int		accept(FILE *stream, char c);
@@ -47,5 +50,8 @@ int		expect(FILE *stream, char c);
 void	free_json(json j);
 
 void	serialize(json j);
+
+int 	parse_value(json *dst, FILE *stream);
+int		parse_integer(json *dst, FILE *stream);
 
 int		argo(json *dst, FILE *stream);
