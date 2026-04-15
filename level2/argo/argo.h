@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:30:12 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/15 22:28:23 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/16 01:26:10 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 typedef struct	json {
 	enum {
@@ -53,5 +54,6 @@ void	serialize(json j);
 
 int 	parse_value(json *dst, FILE *stream);
 int		parse_integer(json *dst, FILE *stream);
+int		parse_string(json *dst, FILE *stream);
 
 int		argo(json *dst, FILE *stream);

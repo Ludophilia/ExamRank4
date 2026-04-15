@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/15 22:26:21 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/16 01:26:24 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,11 +123,11 @@ int parse_value(json *dst, FILE *stream)
 		parse_integer(dst, stream);
 		// no expect?
 	}
-	// else if (c == '"')
-	// {
-	// 	parse_string(dst, stream);
-	// 	// -> expect '"' (later)
-	// }
+	else if (c == '"')
+	{
+		parse_string(dst, stream);
+		// -> expect '"' (later)
+	}
 	// else if (c == '{')
 	// {
 	// 	parse_map(dst, stream);
@@ -155,32 +155,67 @@ int	parse_integer(json *dst, FILE *stream)
 	while (c != EOF && isdigit(c))
 	{
 		consume(stream);
+		// error
 		nbr = 10 * nbr + (c - '0');
 		c = peek(stream);
 		// if (c == EOF)
 			// error
 	}
 	dst->integer = nbr;
-	return (0);
+	return (0); // ???
 }
+
+// How do you know if a JSON should be allocated or not?
+// We start from a json allocated on stack, or at least something we don't
+// control...
 
 // '"bonjour"'
 // => (json){.type = STRING, .string = "bonjour"};
-// int	parse_string(json *dst, FILE *stream)
-// {
-// 	// How do you know if a JSON should be allocated or not?
-// 	// We start from a json allocated on stack, or at least something we don't
-// 	// control...
-// 	int	len;
-// 	// char	str[]
+int	parse_string(json *dst, FILE *stream)
+{
+	int		i;
+	char	buffer[512], c, d, *string;
 	
-// 	dst->type = STRING;
-// 	// fscanf(stream, "%d", &dst->integer);
+	expect(stream, '"');
+	dst->type = STRING;
 
-// 	return (0); // ???
-// }
+	i = 0;
+	// Copy to the buffer.
+	c = peek(stream);
+	// if (c == EOF)
+		// error
+	while (c != EOF && c != '"')
+	{
+		// IS that enough?
+		if (c == '\\')
+		{
+			d = peek(stream);
+			// if (d == EOF)
+				// error
+			if (d != '\\' && d != '"') 	// Only \ and ""
+				unexpected(stream);
+		}
+		consume(stream);
+		buffer[i++] = c;
+		c = peek(stream);
+		// if (c == EOF)
+			// error
+	}
+	buffer[i] = '\0';
+	expect(stream, '"'); // Here?
 
-// // int	parse_map(json *dst, FILE *stream)
+	// Don't forget the /0
+	string = calloc(i + 1, sizeof(char));
+	// if (string == NULL)
+	// 	return (-1); // ???
+	for (int j = 0; buffer[j]; j++)
+		string[j] = buffer[j];
+	
+	dst->string = string;
+	return (0); // ???
+}
+
+// int	parse_map(json *dst, FILE *stream)
 
 
 
