@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/16 01:26:24 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/16 02:01:17 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,23 +115,20 @@ int parse_value(json *dst, FILE *stream)
 {
 	// That's just the outline. Nothing works...
 	int c = peek(stream);
-
-	// if c == EOF... (error or end)
+	// if (c == EOF)
+		// error ? end ?
 	
 	if (isdigit(c))
 	{
 		parse_integer(dst, stream);
-		// no expect?
 	}
 	else if (c == '"')
 	{
 		parse_string(dst, stream);
-		// -> expect '"' (later)
 	}
 	// else if (c == '{')
 	// {
 	// 	parse_map(dst, stream);
-	// 	// -> expect '}' (later)
 	// }
 	return (0);// ??? 
 }
@@ -151,7 +148,7 @@ int	parse_integer(json *dst, FILE *stream)
 	dst->type = INTEGER;
 	c = peek(stream);
 	// if (c == EOF)
-		// error
+		// error ? end ?
 	while (c != EOF && isdigit(c))
 	{
 		consume(stream);
@@ -159,7 +156,7 @@ int	parse_integer(json *dst, FILE *stream)
 		nbr = 10 * nbr + (c - '0');
 		c = peek(stream);
 		// if (c == EOF)
-			// error
+			// error ? end ?
 	}
 	dst->integer = nbr;
 	return (0); // ???
@@ -183,23 +180,39 @@ int	parse_string(json *dst, FILE *stream)
 	// Copy to the buffer.
 	c = peek(stream);
 	// if (c == EOF)
-		// error
+		// error ? end ?
 	while (c != EOF && c != '"')
 	{
 		// IS that enough?
+			printf("c -> '%c'\n", c);
+
 		if (c == '\\')
 		{
 			d = peek(stream);
 			// if (d == EOF)
-				// error
+				// error ? end ?
 			if (d != '\\' && d != '"') 	// Only \ and ""
 				unexpected(stream);
+
+			// ./build.sh && echo -n '"\" "' | ./argo /dev/stdin
+			// NOT THERE YET...
+			buffer[i++] = c;
+			consume(stream);
+			c = peek(stream);
+			// if (c == EOF)
+			// error ? end ?
+			printf("c -> '%c'\n", c);
+			buffer[i++] = c;
+			consume(stream);
 		}
-		consume(stream);
-		buffer[i++] = c;
+		else
+		{
+			buffer[i++] = c;
+			consume(stream);
+		}
 		c = peek(stream);
 		// if (c == EOF)
-			// error
+			// error ? end ?
 	}
 	buffer[i] = '\0';
 	expect(stream, '"'); // Here?
