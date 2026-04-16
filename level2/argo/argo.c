@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/16 23:13:55 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/17 00:47:05 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,10 +126,10 @@ int parse_value(json *dst, FILE *stream)
 	{
 		parse_string(dst, stream);
 	}
-	// else if (c == '{')
-	// {
-	// 	parse_map(dst, stream);
-	// }
+	else if (c == '{')
+	{
+		parse_map(dst, stream);
+	}
 	return (0);// ??? 
 }
 
@@ -212,7 +212,10 @@ int	parse_string(json *dst, FILE *stream)
 	return (0); // ???
 }
 
-// int	parse_map(json *dst, FILE *stream)
+int	parse_map(json *dst, FILE *stream)
+{
+	// THis afternoon...
+}
 
 
 
