@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/16 02:01:17 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/16 23:13:55 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,10 +117,10 @@ int parse_value(json *dst, FILE *stream)
 	int c = peek(stream);
 	// if (c == EOF)
 		// error ? end ?
-	
 	if (isdigit(c))
 	{
 		parse_integer(dst, stream);
+		// error...
 	}
 	else if (c == '"')
 	{
@@ -152,7 +152,7 @@ int	parse_integer(json *dst, FILE *stream)
 	while (c != EOF && isdigit(c))
 	{
 		consume(stream);
-		// error
+		// error ?
 		nbr = 10 * nbr + (c - '0');
 		c = peek(stream);
 		// if (c == EOF)
@@ -171,37 +171,24 @@ int	parse_integer(json *dst, FILE *stream)
 int	parse_string(json *dst, FILE *stream)
 {
 	int		i;
-	char	buffer[512], c, d, *string;
+	char	buffer[512], c, *string;
 	
 	expect(stream, '"');
 	dst->type = STRING;
-
 	i = 0;
-	// Copy to the buffer.
 	c = peek(stream);
 	// if (c == EOF)
 		// error ? end ?
 	while (c != EOF && c != '"')
 	{
-		// IS that enough?
-			printf("c -> '%c'\n", c);
-
 		if (c == '\\')
 		{
-			d = peek(stream);
-			// if (d == EOF)
-				// error ? end ?
-			if (d != '\\' && d != '"') 	// Only \ and ""
-				unexpected(stream);
-
-			// ./build.sh && echo -n '"\" "' | ./argo /dev/stdin
-			// NOT THERE YET...
-			buffer[i++] = c;
 			consume(stream);
 			c = peek(stream);
-			// if (c == EOF)
-			// error ? end ?
-			printf("c -> '%c'\n", c);
+			// if (d == EOF)
+				// error ? end ?
+			if (c != '\\' && c != '"')
+				unexpected(stream); // return
 			buffer[i++] = c;
 			consume(stream);
 		}
@@ -214,16 +201,13 @@ int	parse_string(json *dst, FILE *stream)
 		// if (c == EOF)
 			// error ? end ?
 	}
+	expect(stream, '"'); // Error management
 	buffer[i] = '\0';
-	expect(stream, '"'); // Here?
-
-	// Don't forget the /0
 	string = calloc(i + 1, sizeof(char));
 	// if (string == NULL)
-	// 	return (-1); // ???
+	// 	return (-1);
 	for (int j = 0; buffer[j]; j++)
 		string[j] = buffer[j];
-	
 	dst->string = string;
 	return (0); // ???
 }
