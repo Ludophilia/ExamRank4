@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/17 00:47:05 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/19 01:35:20 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,9 @@ ascii<32,127> ::=  ' ' | ... | DEL
 
 */
 
+// ########################################################################
+
+
 int parse_value(json *dst, FILE *stream)
 {
 	// That's just the outline. Nothing works...
@@ -132,6 +135,9 @@ int parse_value(json *dst, FILE *stream)
 	}
 	return (0);// ??? 
 }
+
+// ########################################################################
+
 
 // How do you know a JSON should be allocated or not?
 // We start from a json allocated on stack, or at least something we don't
@@ -162,19 +168,12 @@ int	parse_integer(json *dst, FILE *stream)
 	return (0); // ???
 }
 
-// How do you know if a JSON should be allocated or not?
-// We start from a json allocated on stack, or at least something we don't
-// control...
+// ########################################################################
 
-// '"bonjour"'
-// => (json){.type = STRING, .string = "bonjour"};
-int	parse_string(json *dst, FILE *stream)
+int	parse_chars(FILE *stream, char *buffer)
 {
-	int		i;
-	char	buffer[512], c, *string;
-	
-	expect(stream, '"');
-	dst->type = STRING;
+	int		c, i;
+
 	i = 0;
 	c = peek(stream);
 	// if (c == EOF)
@@ -201,23 +200,99 @@ int	parse_string(json *dst, FILE *stream)
 		// if (c == EOF)
 			// error ? end ?
 	}
-	expect(stream, '"'); // Error management
 	buffer[i] = '\0';
-	string = calloc(i + 1, sizeof(char));
-	// if (string == NULL)
-	// 	return (-1);
-	for (int j = 0; buffer[j]; j++)
-		string[j] = buffer[j];
-	dst->string = string;
+	// Error management
+	return (i + 1);
+}
+
+char	*allocate_string(FILE *stream)
+{
+	char	buffer[512], *string;
+	int		len;
+
+	if (expect(stream, '"') == 0)
+		return (NULL); // error
+	len = parse_chars(stream, buffer);
+	if (len == -1)
+		return (NULL); // error
+	if (expect(stream, '"') == 0)
+		return (NULL); // error	
+	string = calloc(len, sizeof(char));
+	if (string == NULL)
+		return (NULL); // error
+	for (int i = 0; buffer[i]; i++)
+		string[i] = buffer[i];
+	return (string);
+}
+
+// '"bonjour"'
+// => (json){.type = STRING, .string = "bonjour"};
+int	parse_string(json *dst, FILE *stream)
+{	
+	dst->type = STRING;
+	dst->string = allocate_string(stream);
+	// if (dst->string == NULL)
+		// error
 	return (0); // ???
 }
 
+// ########################################################################
+
+
+// $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
+// $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
 int	parse_map(json *dst, FILE *stream)
 {
-	// THis afternoon...
+	pair	*pairs;
+	int		c;
+	int		size;
+
+	expect(stream, '{');
+	dst->type = MAP;
+
+	c = peek(stream);
+	// if (c == EOF)
+		// error ? end ?
+	size = 0;
+	while (c == '"') // supposedy. c != EOF && c == '"'
+	{
+		if (size == 0)
+			pairs = malloc(++size * sizeof(pair));
+		else
+			pairs = realloc(pairs, ++size * sizeof(pair));
+		// if (pairs == NULL)
+			// error
+
+		pairs[size - 1].key = allocate_string(stream);
+		// if (pairs[size - 1].key == NULL)
+			// error
+
+		parse_value(&pairs[size - 1].value, stream);
+			// error
+
+		c = peek(stream);
+		// if (c == EOF)
+			// error ? end ?
+
+		if (c == ',')
+		{
+			consume(stream);
+			c = peek(stream);
+			// if (c == EOF)
+				// error ? end ?
+		}
+	}
+	expect(stream, '}');
+	/// error ?
+
+	dst->map.data = pairs;
+	dst->map.size = size;
+
+	return (0);
 }
 
 
+// ########################################################################
 
 
 int	argo(json *dst, FILE *stream)
