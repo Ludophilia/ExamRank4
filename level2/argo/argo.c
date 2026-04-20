@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/20 13:24:11 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:33:29 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,11 +137,6 @@ int parse_value(json *dst, FILE *stream)
 
 // ########################################################################
 
-
-// How do you know a JSON should be allocated or not?
-// We start from a json allocated on stack, or at least something we don't
-// control...
-
 // '1'
 // => (json){.type = INTEGER, .integer = 1};
 int	parse_integer(json *dst, FILE *stream)
@@ -242,7 +237,7 @@ int	parse_string(json *dst, FILE *stream)
 // $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
 int	parse_map(json *dst, FILE *stream)
 {
-	pair	*pairs;
+	pair	*pairs, *tmp;
 	int		c;
 	int		size;
 
@@ -258,9 +253,12 @@ int	parse_map(json *dst, FILE *stream)
 		if (size == 0)
 			pairs = malloc(++size * sizeof(pair));
 		else
-			pairs = realloc(pairs, ++size * sizeof(pair));
-		// if (pairs == NULL)
-			// error
+		{
+			tmp = realloc(pairs, ++size * sizeof(pair));
+			// if (pairs == NULL)
+				// error
+			pairs = tmp;
+		}
 
 		pairs[size - 1].key = allocate_string(stream);
 		// if (pairs[size - 1].key == NULL)
