@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:30:12 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/20 13:22:24 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/20 15:48:42 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,9 @@ void	serialize(json j);
 
 int 	parse_value(json *dst, FILE *stream);
 int		parse_integer(json *dst, FILE *stream);
-
 int		parse_chars(FILE *stream, char *buffer);
 char	*allocate_string(FILE *stream);
 int		parse_string(json *dst, FILE *stream);
-
-int	parse_map(json *dst, FILE *stream);
+int		parse_map(json *dst, FILE *stream);
 
 int		argo(json *dst, FILE *stream);

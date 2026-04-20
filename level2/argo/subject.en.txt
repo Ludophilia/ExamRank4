@@ -38,7 +38,6 @@ $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
 $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
 {"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}$
 
-
 // 20/04: Error cases not yet managed
 
 $> echo -n '"unfinished string' | ./argo /dev/stdin | cat -e

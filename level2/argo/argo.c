@@ -6,196 +6,78 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/20 13:33:29 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/20 15:59:42 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argo.h"
 
-
-/* Can you use the examples and show how the json is translated from its
-javascript / rfc8259 form to its C form? 
-
-=> From the struct definitions alone, I just can't see how those two come together... 
-
-EXAMPLES:
-
-'1'
-=> (json){.type = INTEGER, .integer = 1};
-
-'"bonjour"'
-=> (json){.type = STRING, .string = "bonjour"};
-
-'{"tomatoes":42,"potatoes":234}'
-=> (json){
-	.type = MAP,
-	.map = (map){
-		.data = (pair[]){
-			(pair){.key="tomatoes", .value=(json){.type= INTEGER, .integer=42}},
-			(pair){.key="potatoes", .value=(json){.type= INTEGER, .integer=234}}			
-		},
-		.size = 2
-	}
-}
-=> size 2 because there's 1 comma in the JSON object
-
-'{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}'
-OR
-'{
-	"recursion":{
-		"recursion":{
-			"recursion": {
-				"recursion":"recursion"
-			}
-		}
-	}
-}'
-=> (json){
-	.type = MAP,
-	.map = (map){
-		.data = (pair[]){
-			(pair){
-				.key="recursion",
-				.value=(json){
-					.type= MAP,
-					.map=(map){
-						.data = (pair[]){
-							(pair){
-								.key = "recursion",
-								.value = (json){
-									.type= MAP,
-									.map=(map){
-										.data = (pair[]){
-											(pair){
-												.key = "recursion",
-												.value = (json){
-													(3 levels deep... 1 to go)
-												}
-											}
-										}
-										.size = 1
-									}
-								}
-							}
-						}
-						.size = 1
-					}
-				}
-			},
-		},
-		.size = 1
-	}
-}
-=> size 1 because there's 1 key, 0 comma in the JSON object
-	
-*/
-
-/* Please now try to write the grammar... from the top level down to
-the terminals...
-
-What contains what basically, what are the terminals, where is the mutual 
-recursion case that justifies RECURSIVE descent parsing...
-
-Start from the terminals maybe?
-
-value ::= integer | string | map
-map ::= '{' (pair (',' pair)*)? '}'
-pair ::= string ':' value
-
-integer ::= digit+
-string ::= '"' character* '"'
-
-digit ::= '0' | ... | '9'
-character ::= ascii<32,127>
-ascii<32,127> ::=  ' ' | ... | DEL 
-
-*/
-
-// ########################################################################
-
 int parse_value(json *dst, FILE *stream)
 {
-	// That's just the outline. Nothing works...
-	int c = peek(stream);
-	// if (c == EOF)
-		// error ? end ?
-	if (isdigit(c))
-	{
-		parse_integer(dst, stream);
-		// error...
-	}
-	else if (c == '"')
-	{
-		parse_string(dst, stream);
-	}
-	else if (c == '{')
-	{
-		parse_map(dst, stream);
-	}
-	return (0); // ???
-}
+	int		c;
 
-// ########################################################################
+	if ((c = peek(stream)) == EOF)
+		return (-1); // no leaks?
+	if (isdigit(c)
+		&& parse_integer(dst, stream) == -1)
+		return (-1);
+	else if (c == '"'
+		&& parse_string(dst, stream) == -1)
+		return (-1);
+	else if (c == '{'
+		&& parse_map(dst, stream) == -1)
+		return (-1);
+	return (0);
+}
 
 // '1'
 // => (json){.type = INTEGER, .integer = 1};
 int	parse_integer(json *dst, FILE *stream)
 {
-	int	nbr, c;
+	int		nbr, c;
 
-	// Alt: fscanf(stream, "%d", &dst->integer); TEST IT ;)
+	printf("HERE\n");
 	nbr = 0;
 	dst->type = INTEGER;
-	c = peek(stream);
-	// if (c == EOF)
-		// error ? end ?
-	while (c != EOF && isdigit(c))
+	// EOF: end of file or error?
+	if ((c = peek(stream)) == EOF)
+		return (-1); // no leaks?
+	while (isdigit(c))
 	{
-		consume(stream);
-		// error ?
+		printf()
+		if (consume(stream) == EOF)
+			return (-1);
 		nbr = 10 * nbr + (c - '0');
-		c = peek(stream);
-		// if (c == EOF)
-			// error ? end ?
+		if ((c = peek(stream)) == EOF)
+			return (-1);
 	}
 	dst->integer = nbr;
-	return (0); // ???
+	return (0);
 }
-
-// ########################################################################
 
 int	parse_chars(FILE *stream, char *buffer)
 {
 	int		c, i;
 
 	i = 0;
-	c = peek(stream);
-	// if (c == EOF)
-		// error ? end ?
-	while (c != EOF && c != '"')
+	if ((c = peek(stream)) == EOF)
+		return (-1); // no leaks ?
+	while (c != '"')
 	{
 		if (c == '\\')
 		{
-			consume(stream);
-			c = peek(stream);
-			// if (d == EOF)
-				// error ? end ?
+			if (consume(stream) == EOF
+				|| (c = peek(stream)) == EOF)
+				return (-1);
 			if (c != '\\' && c != '"')
-				unexpected(stream); // return
-			buffer[i++] = c;
-			consume(stream);
+				return (unexpected(stream), -1);
 		}
-		else
-		{
-			buffer[i++] = c;
-			consume(stream);
-		}
-		c = peek(stream);
-		// if (c == EOF)
-			// error ? end ?
+		buffer[i++] = c;
+		if (consume(stream) == EOF
+			|| (c = peek(stream)) == EOF)
+			return (-1);
 	}
 	buffer[i] = '\0';
-	// Error management
 	return (i + 1);
 }
 
@@ -204,16 +86,12 @@ char	*allocate_string(FILE *stream)
 	char	buffer[512], *string;
 	int		len;
 
-	if (expect(stream, '"') == 0)
-		return (NULL); // error
-	len = parse_chars(stream, buffer);
-	if (len == -1)
-		return (NULL); // error
-	if (expect(stream, '"') == 0)
-		return (NULL); // error	
-	string = calloc(len, sizeof(char));
-	if (string == NULL)
-		return (NULL); // error
+	if (expect(stream, '"') == 0
+		|| (len = parse_chars(stream, buffer)) == -1
+		|| expect(stream, '"') == 0)
+		return (NULL); // no leaks ?
+	if ((string = calloc(len, sizeof(char))) == NULL)
+		return (NULL);
 	for (int i = 0; buffer[i]; i++)
 		string[i] = buffer[i];
 	return (string);
@@ -222,16 +100,12 @@ char	*allocate_string(FILE *stream)
 // '"bonjour"'
 // => (json){.type = STRING, .string = "bonjour"};
 int	parse_string(json *dst, FILE *stream)
-{	
+{
 	dst->type = STRING;
-	dst->string = allocate_string(stream);
-	// if (dst->string == NULL)
-		// error
-	return (0); // ???
+	if ((dst->string = allocate_string(stream)) == NULL)
+		return (-1);
+	return (0);
 }
-
-// ########################################################################
-
 
 // $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
 // $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
@@ -241,8 +115,9 @@ int	parse_map(json *dst, FILE *stream)
 	int		c;
 	int		size;
 
-	expect(stream, '{');
 	dst->type = MAP;
+	if (expect(stream, '{') == 0)
+		return (-1);
 
 	c = peek(stream);
 	// if (c == EOF)
@@ -255,7 +130,7 @@ int	parse_map(json *dst, FILE *stream)
 		else
 		{
 			tmp = realloc(pairs, ++size * sizeof(pair));
-			// if (pairs == NULL)
+			// if (tmp == NULL)
 				// error
 			pairs = tmp;
 		}
@@ -289,32 +164,13 @@ int	parse_map(json *dst, FILE *stream)
 	return (0);
 }
 
-
-// ########################################################################
-
-
+// 20/04: Don't forget to check memory leaks...
 int	argo(json *dst, FILE *stream)
 {
-	// What to do?
-
-	// = Just try to write the code for the happy path
-	// = Then manage the errors...
-
-	// --------------------------
-
-	// stream (FILE *stream) reads stdin in most examples...
-
-	// Token to token (LL(1))
-	// => getc (getc(FILE *stream))
-
-	// --------------------------
-
-	// dst is a pointer to the json structure
-	// json is type / (map | integer | string)
-	parse_value(dst, stream); // Next, return -1 for failure.
+	if (parse_value(dst, stream) == -1)
+		return (-1);
 	return (1);
 }
-
 
 int	main(int argc, char **argv)
 {
