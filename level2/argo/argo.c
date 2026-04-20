@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/19 01:35:20 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:24:11 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ ascii<32,127> ::=  ' ' | ... | DEL
 
 // ########################################################################
 
-
 int parse_value(json *dst, FILE *stream)
 {
 	// That's just the outline. Nothing works...
@@ -133,7 +132,7 @@ int parse_value(json *dst, FILE *stream)
 	{
 		parse_map(dst, stream);
 	}
-	return (0);// ??? 
+	return (0); // ???
 }
 
 // ########################################################################
@@ -266,6 +265,7 @@ int	parse_map(json *dst, FILE *stream)
 		pairs[size - 1].key = allocate_string(stream);
 		// if (pairs[size - 1].key == NULL)
 			// error
+		expect(stream, ':');
 
 		parse_value(&pairs[size - 1].value, stream);
 			// error
