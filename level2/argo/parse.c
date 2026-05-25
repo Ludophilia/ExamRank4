@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 20:28:20 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/25 22:07:00 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/26 00:04:20 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,54 +42,51 @@ int	parse_integer(json *dst, FILE *stream)
 
 // ======================================================
 
-// int	parse_chars(FILE *stream, char *buffer)
-// {
-// 	int		c, i;
+// '"bonjour"'
+// => (json){.type = STRING, .string = "bonjour"};
+int	parse_string(json *dst, FILE *stream)
+{
+	char	buffer[512];
+	int		i, c;
 
-// 	i = 0;
-// 	c = peek(stream);
-// 	while (c != EOF && c != '"')
-// 	{
-// 		if (c == '\\')
-// 		{
-// 			consume(stream);
-// 			c = peek(stream);
-// 			if (c != '\\' && c != '"')
-// 				return (unexpected(stream), -1);
-// 		}
-// 		buffer[i++] = c;
-// 		consume(stream);
-// 		c = peek(stream);
-// 	}
-// 	buffer[i] = '\0';
-// 	return (i + 1);
-// }
+	dst->type = STRING;
+	if (expect(stream, '"') == 0)
+		return (unexpected(stream), -1);
+	i = 0;
+	c = peek(stream);
+	while (c != EOF && c != '"')
+	{
+		if (c == '\\')
+		{
+			consume(stream);
+			c = peek(stream);
+			if (c != '\\' && c != '"')
+				return (unexpected(stream), -1);
+		}
+		buffer[i++] = c;
+		consume(stream);
+		c = peek(stream);
+	}
+	buffer[i] = '\0';
+	if (expect(stream, '"') == 0)
+		return (unexpected(stream), -1);
 
-// char	*allocate_string(FILE *stream)
-// {
-// 	char	buffer[512], *string;
-// 	int		len;
-
-// 	if (expect(stream, '"') == 0
-// 		|| (len = parse_chars(stream, buffer)) == -1
-// 		|| expect(stream, '"') == 0)
-// 		return (NULL); // no leaks ?
-// 	if ((string = calloc(len, sizeof(char))) == NULL)
-// 		return (NULL);
-// 	for (int i = 0; buffer[i]; i++)
-// 		string[i] = buffer[i];
-// 	return (string);
-// }
-
-// // '"bonjour"'
-// // => (json){.type = STRING, .string = "bonjour"};
-// int	parse_string(json *dst, FILE *stream)
-// {
-// 	dst->type = STRING;
-// 	if ((dst->string = allocate_string(stream)) == NULL)
-// 		return (-1);
-// 	return (0);
-// }
+	// 26/05: POORLY ALLOCATED, please try again. Weird bug...
+	printf("i -> %i\n", i);
+	if ((dst->string = malloc(i * sizeof(char))) == NULL)
+		return (-1);
+	int j = 0;
+	while (buffer[j])
+	{
+		printf("[%i] %c\n", j, buffer[j]);
+		dst->string[j] = buffer[j];
+		printf("dst->string + [%i] -> %p\n", j, dst->string + j);
+		j++;
+	}
+	// printf("j -> %i\n", j);
+	dst->string[i] = 0;
+	return (0);
+}
 
 // ======================================================
 

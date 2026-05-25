@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/25 22:01:56 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/25 22:21:09 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,9 @@ int parse_value(json *dst, FILE *stream)
 	if ((c == '-' || isdigit(c))
 		&& parse_integer(dst, stream) == -1)
 		return (-1);
-	// else if (c == '"'
-	// 	&& parse_string(dst, stream) == -1)
-	// 	return (-1);
+	else if (c == '"'
+		&& parse_string(dst, stream) == -1)
+		return (-1);
 	// else if (c == '{'
 	// 	&& parse_map(dst, stream) == -1)
 	// 	return (-1);
