@@ -31,6 +31,28 @@
 // void	free_json(json j);
 // int	argo(json *dst, FILE *stream);
 
+// RESSOURCES
+
+void	free_json(json j)
+{
+	switch (j.type)
+	{
+		case MAP:
+			for (size_t i = 0; i < j.map.size; i++)
+			{
+				free(j.map.data[i].key);
+				free_json(j.map.data[i].value);
+			}
+			free(j.map.data);
+			break ;
+		case STRING:
+			free(j.string);
+			break ;
+		default:
+			break ;
+	}
+}
+
 // PARSING + ERROR
 
 int	consume(FILE *stream)
@@ -71,30 +93,9 @@ int	expect(FILE *stream, char c)
 	return 0;
 }
 
-// RESSOURCES MANAGEMENT
-
-void	free_json(json j)
-{
-	switch (j.type)
-	{
-		case MAP:
-			for (size_t i = 0; i < j.map.size; i++)
-			{
-				free(j.map.data[i].key);
-				free_json(j.map.data[i].value);
-			}
-			free(j.map.data);
-			break ;
-		case STRING:
-			free(j.string);
-			break ;
-		default:
-			break ;
-	}
-}
-
 // SERIALIZATION: flatten the json in a series of character strings 
 // for display on the terminal.
+
 void	serialize(json j)
 {
 	switch (j.type)
