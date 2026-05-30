@@ -32,6 +32,12 @@ $> echo -n '"bonjour"' | ./argo /dev/stdin | cat -e
 "bonjour"$
 $> echo -n '"escape! \" "' | ./argo /dev/stdin | cat -e
 "escape! \" "$
+$> echo -n '"unfinished string' | ./argo /dev/stdin | cat -e
+unexpected end of input$
+$> echo -n '"unfinished string 2\"' | ./argo /dev/stdin | cat -e
+unexpected end of input$
+
+$> echo -n '{"tomatoes":1,"potatoes":"out-of-stock"}' | ./argo /dev/stdin | cat -e
 
 $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
 {"tomatoes":42,"potatoes":234}$
@@ -40,9 +46,7 @@ $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}'
 
 // 20/04: Error cases not yet managed
 
-$> echo -n '"unfinished string' | ./argo /dev/stdin | cat -e
-unexpected end of input$
-$> echo -n '"unfinished string 2\"' | ./argo /dev/stdin | cat -e
-unexpected end of input$
 $> echo -n '{"no value?":}' | ./argo /dev/stdin | cat -e
 unexpected token '}'$
+$> echo -n '{"no other value?":1,}' | ./argo /dev/stdin | cat -e
+unexpected token ','$

@@ -4,13 +4,21 @@
 
 => From the struct definitions alone, I just can't see how those two come together... 
 
-EXAMPLES:
+## EXAMPLES:
+
+### Numbers
 
 '1'
 => (json){.type = INTEGER, .integer = 1};
 
+### Strings
+
 '"bonjour"'
 => (json){.type = STRING, .string = "bonjour"};
+
+### Maps
+
+#### Map 1
 
 '{"tomatoes":42,"potatoes":234}'
 => (json){
@@ -24,6 +32,8 @@ EXAMPLES:
 	}
 }
 => size 2 because there's 1 comma in the JSON object
+
+#### Map 2
 
 '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}'
 OR
@@ -73,9 +83,11 @@ OR
 	}
 }
 => size 1 because there's 1 key, 0 comma in the JSON object
-	
-# Please now try to write the grammar... from the top level down to
-# the terminals...
+
+## GRAMMAR
+
+Please now try to write the grammar... from the top level down to
+the terminals...
 
 What contains what basically, what are the terminals, where is the mutual 
 recursion case that justifies RECURSIVE descent parsing...
@@ -84,7 +96,7 @@ value ::= integer | string | map
 map ::= '{' (pair (',' pair)*)? '}'
 pair ::= string ':' value
 
-integer ::= digit+
+integer ::= '-'?digit+
 string ::= '"' character* '"'
 
 digit ::= '0' | ... | '9'

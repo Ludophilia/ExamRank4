@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 20:28:20 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/30 19:48:46 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/30 22:32:37 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,61 +81,78 @@ int	parse_string(json *dst, FILE *stream)
 
 // ======================================================
 
-// $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
+// $> echo -n '{"tomatoes":42}'| ./argo /dev/stdin | cat -e
+// $> echo -n '{"tomatoes":1,"potatoes":"out-of-stock"}'| ./argo /dev/stdin | cat -e
 // $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
-// int	parse_map(json *dst, FILE *stream)
-// {
-// 	pair	*pairs, *tmp;
-// 	int		c;
-// 	int		size;
+int	parse_map(json *dst, FILE *stream)
+{
+	pair	*pairs, *tmp;
+	int		size;
 
-// 	dst->type = MAP;
-// 	if (expect(stream, '{') == 0)
-// 		return (-1);
-// 	c = peek(stream);
-// 	size = 0;
-// 	while (c != EOF && c == '"') // c == '"' is start of a key... But what if there's none?
-// 	{
-// 		if (size == 0)
-// 		{
-// 			pairs = calloc(++size * sizeof(pair));
-// 			if (pairs == NULL)
-// 				return (-1);
-// 		}
-// 		else
-// 		{
-// 			tmp = realloc(pairs, ++size * sizeof(pair));
-// 			if (tmp == NULL)
-// 				return (free(pairs), -1); // 
-// 			pairs = tmp;
-// 		}
+	int		c;
 
-// 		pairs[size - 1].key = allocate_string(stream);
-// 		if (pairs[size - 1].key == NULL)
-// 			return (free(pairs), -1);
+	dst->type = MAP;
+	if (expect(stream, '{') == 0) // consummed
+		return (-1);
 
-// 		if (expect(stream, ':') == 0)
-// 			return ();
-// 		parse_value(&pairs[size - 1].value, stream);
-// 			// error
+	// 30/05: What are we trying to do?
 
-// 		c = peek(stream);
-// 		// if (c == EOF)
-// 			// error ? end ?
+	// After {, that's LL(1). Character after character, fill the json structure,
+	// here, as a map: a 'pair *' data and a 'int' size. Each 'pair' are a
+	// 'char *' key and 'json' value;
 
-// 		if (c == ',')
-// 		{
-// 			consume(stream);
-// 			c = peek(stream);
-// 			// if (c == EOF)
-// 				// error ? end ?
-// 		}
-// 	}
-// 	expect(stream, '}');
-// 	/// error ?
+	c = peek(stream);
 
-// 	dst->map.data = pairs;
-// 	dst->map.size = size;
+	size = 0;
+	while (c != EOF) // && c == '"') // c == '"' is start of a key... But what if there's none?
+	{
+		// 30/05: Dynamic array management.
+		if (size == 0)
+		{
+			pairs = calloc(++size, sizeof(pair));
+			if (pairs == NULL)
+				return (-1);
+		}
+		else
+		{
+			tmp = realloc(pairs, ++size * sizeof(pair));
+			if (tmp == NULL)
+				return (free(pairs), -1); // 
+			pairs = tmp;
+		}
 
-// 	return (0);
-// }
+		// Parsing key
+		pairs[size - 1].key = allocate_string(stream);
+		if (pairs[size - 1].key == NULL)
+			return (free(pairs), -1);
+
+		// Parsing key value separator
+		if (expect(stream, ':') == 0)
+			return (-1);
+
+		// Parsing value (integer, string or another map (recusion))	
+		parse_value(&pairs[size - 1].value, stream);
+
+		c = peek(stream);
+
+		// Parsing pair separator if exists
+		if (c == ',')
+		{
+			consume(stream);
+			c = peek(stream);
+
+		}
+	}
+
+
+	// end of map 
+	if (expect(stream, '}') == -1)
+		return (-1);
+
+
+	dst->map.data = pairs;
+	dst->map.size = size;
+
+
+	return (0);
+}

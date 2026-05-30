@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/30 19:55:13 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/30 20:20:40 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int parse_value(json *dst, FILE *stream)
 
 	c = peek(stream);
 	if (c != '-' && !isdigit(c) && c != '"')
-		return (printf("HEREA\n"), unexpected(stream), -1);
+		return (unexpected(stream), -1);
 
 	if ((c == '-' || isdigit(c))
 		&& parse_integer(dst, stream) == -1)
@@ -38,9 +38,9 @@ int parse_value(json *dst, FILE *stream)
 	else if (c == '"'
 		&& parse_string(dst, stream) == -1)
 		return (-1);
-	// else if (c == '{'
-	// 	&& parse_map(dst, stream) == -1)
-	// 	return (-1);
+	else if (c == '{'
+		&& parse_map(dst, stream) == -1)
+		return (-1);
 
 	return (0);
 }
