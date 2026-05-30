@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/25 22:21:09 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/30 19:55:13 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ int parse_value(json *dst, FILE *stream)
 	int		c;
 
 	c = peek(stream);
+	if (c != '-' && !isdigit(c) && c != '"')
+		return (printf("HEREA\n"), unexpected(stream), -1);
+
 	if ((c == '-' || isdigit(c))
 		&& parse_integer(dst, stream) == -1)
 		return (-1);
@@ -38,6 +41,7 @@ int parse_value(json *dst, FILE *stream)
 	// else if (c == '{'
 	// 	&& parse_map(dst, stream) == -1)
 	// 	return (-1);
+
 	return (0);
 }
 
@@ -52,21 +56,23 @@ int	argo(json *dst, FILE *stream)
 int	main(int argc, char **argv)
 {
 	if (argc != 2)
-		return 1;
+		return (1);
 
 	// char 	*filename = argv[1];
-	FILE 	*stream = fopen(argv[1], "r");
 	json	file;
+	FILE	*stream = fopen(argv[1], "r");
+	// stream, no error management?
 
-	if (argo (&file, stream) != 1)
+	if (argo(&file, stream) != 1)
 	{
 		free_json(file);
 		fclose(stream);
-		return 1;
+		return (1);
 	}
 
 	serialize(file);
 	printf("\n");
+
 	free_json(file); // Personal addition
 	fclose(stream);
 }

@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 20:28:20 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/26 00:04:20 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/05/30 19:48:46 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,12 @@ int	parse_integer(json *dst, FILE *stream)
 int	parse_string(json *dst, FILE *stream)
 {
 	char	buffer[512];
-	int		i, c;
+	int		i, c, f;
 
+	f = 0;
 	dst->type = STRING;
 	if (expect(stream, '"') == 0)
-		return (unexpected(stream), -1);
+		return (-1);
 	i = 0;
 	c = peek(stream);
 	while (c != EOF && c != '"')
@@ -60,31 +61,21 @@ int	parse_string(json *dst, FILE *stream)
 		{
 			consume(stream);
 			c = peek(stream);
-			if (c != '\\' && c != '"')
-				return (unexpected(stream), -1);
+			if (c != '\\' && c != '"' && ++f)
+				break ;
 		}
 		buffer[i++] = c;
 		consume(stream);
 		c = peek(stream);
 	}
 	buffer[i] = '\0';
-	if (expect(stream, '"') == 0)
-		return (unexpected(stream), -1);
-
-	// 26/05: POORLY ALLOCATED, please try again. Weird bug...
-	printf("i -> %i\n", i);
-	if ((dst->string = malloc(i * sizeof(char))) == NULL)
-		return (-1);
-	int j = 0;
-	while (buffer[j])
-	{
-		printf("[%i] %c\n", j, buffer[j]);
+	if ((dst->string = calloc((i + 1), sizeof(char))) == NULL
+		|| f != 0)
+		return (f ? (unexpected(stream), -1) : -1);
+	for (int j = 0; buffer[j]; j++)
 		dst->string[j] = buffer[j];
-		printf("dst->string + [%i] -> %p\n", j, dst->string + j);
-		j++;
-	}
-	// printf("j -> %i\n", j);
-	dst->string[i] = 0;
+	if (expect(stream, '"') == 0)
+		return (-1);
 	return (0);
 }
 
