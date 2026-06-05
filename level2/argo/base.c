@@ -55,24 +55,16 @@ void	free_json(json j)
 
 // PARSING + ERROR
 
-int	consume(FILE *stream)
-{
-	return getc(stream);
-}
+// int	consume(FILE *stream)
+// {
+// 	return getc(stream);
+// }
 
 int	peek(FILE *stream)
 {
 	int	c = getc(stream);
 	ungetc(c, stream);
 	return c;
-}
-
-void	unexpected(FILE *stream)
-{
-	if (peek(stream) != EOF)
-		printf("unexpected token '%c'\n", peek(stream));
-	else
-		printf("unexpected end of input\n");
 }
 
 int	accept(FILE *stream, char c)
@@ -83,6 +75,14 @@ int	accept(FILE *stream, char c)
 		return 1;
 	}
 	return 0;
+}
+
+void	unexpected(FILE *stream)
+{
+	if (peek(stream) != EOF)
+		printf("unexpected token '%c'\n", peek(stream));
+	else
+		printf("unexpected end of input\n");
 }
 
 int	expect(FILE *stream, char c)

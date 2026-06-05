@@ -97,7 +97,7 @@ map ::= '{' (pair (',' pair)*)? '}'
 pair ::= string ':' value
 
 integer ::= '-'?digit+
-string ::= '"' character* '"'
+string ::= '"'character*'"'
 
 digit ::= '0' | ... | '9'
 character ::= ascii<32,127>

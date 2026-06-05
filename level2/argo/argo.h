@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:30:12 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/25 23:41:51 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/05 22:49:11 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 typedef struct	json {
 	enum {
-		MAP,
+		MAP = 1,
 		INTEGER,
 		STRING
 	} type;
@@ -42,7 +42,7 @@ typedef struct	pair {
 
 void	free_json(json j);
 
-int		consume(FILE *stream);
+// int		consume(FILE *stream);
 int		peek(FILE *stream);
 void	unexpected(FILE *stream);
 int		accept(FILE *stream, char c);
@@ -52,9 +52,9 @@ void	serialize(json j);
 
 int 	parse_value(json *dst, FILE *stream);
 
-int		parse_integer(json *dst, FILE *stream);
+int		parse_integer(int *integer, FILE *stream);
 
-int		parse_string(json *dst, FILE *stream);
+int		parse_string(char **string, FILE *stream);
 
 // int		parse_map(json *dst, FILE *stream);
 

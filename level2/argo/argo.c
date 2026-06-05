@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 20:29:21 by jegerman          #+#    #+#             */
-/*   Updated: 2026/05/30 20:20:40 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/05 22:38:14 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,18 +29,22 @@ int parse_value(json *dst, FILE *stream)
 	int		c;
 
 	c = peek(stream);
-	if (c != '-' && !isdigit(c) && c != '"')
+	// 5/06 - Really?
+	if (c != '-' && !isdigit(c) && c != '"' && c != '{')
 		return (unexpected(stream), -1);
 
 	if ((c == '-' || isdigit(c))
-		&& parse_integer(dst, stream) == -1)
+		&& (dst->type = INTEGER)
+		&& parse_integer(&dst->integer, stream) == -1)
 		return (-1);
 	else if (c == '"'
-		&& parse_string(dst, stream) == -1)
+		&& (dst->type = STRING)
+		&& parse_string(&dst->string, stream) == -1)
 		return (-1);
-	else if (c == '{'
-		&& parse_map(dst, stream) == -1)
-		return (-1);
+	// else if (c == '{'
+	// 	&& (dst->type = MAP)
+	// 	&& parse_map(dst, stream) == -1)
+	// 	return (-1);
 
 	return (0);
 }
