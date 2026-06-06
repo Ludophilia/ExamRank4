@@ -48,5 +48,5 @@ $> echo -n '{"no value?":}' | ./argo /dev/stdin | cat -e
 unexpected token '}'$
 $> echo -n '{"no other value?":1,}' | ./argo /dev/stdin | cat -e
 unexpected token ','$ 
-	=> What, the unexpected token is '}'. We expect another key value pair after
+	=> What!?? The unexpected token is '}'. We expect another key-value pair after
 	a ',', not at a map symbol terminator.
