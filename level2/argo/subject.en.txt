@@ -44,9 +44,9 @@ $> echo -n '{"tomatoes":42,"potatoes":234}' | ./argo /dev/stdin | cat -e
 $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
 {"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}$
 
-// 20/04: Error cases not yet managed
-
 $> echo -n '{"no value?":}' | ./argo /dev/stdin | cat -e
 unexpected token '}'$
 $> echo -n '{"no other value?":1,}' | ./argo /dev/stdin | cat -e
-unexpected token ','$
+unexpected token ','$ 
+	=> What, the unexpected token is '}'. We expect another key value pair after
+	a ',', not at a map symbol terminator.

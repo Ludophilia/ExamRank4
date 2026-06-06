@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 20:28:20 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/05 22:49:53 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/06 16:07:25 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@ int	parse_integer(int *integer, FILE *stream)
 
 	nbr = 0;
 	sign = 1;
-	c = peek(stream);
-	if (c == '-')
+	if ((c = peek(stream)) == '-')
 	{
 		accept(stream, c);
 		sign = -1;
@@ -85,76 +84,37 @@ int	parse_string(char **string, FILE *stream)
 // $> echo -n '{"tomatoes":42}' | ./argo /dev/stdin | cat -e
 // $> echo -n '{"tomatoes":1,"potatoes":"out-of-stock"}'| ./argo /dev/stdin | cat -e
 // $> echo -n '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}' | ./argo /dev/stdin | cat -e
+int	parse_map(map *map, FILE *stream)
+{
+	pair	*tmp, *curr;
+	int		c;
 
-// 5/06: I want something akin to int	parse_string(char **string, FILE *stream)
-// pass the structure directly, not the whole json.
-
-// int	parse_map(json *dst, FILE *stream)
-// {
-// 	pair	*tmp;
-// 	int		c;
-
-// 	dst->type = MAP;
-// 	if (expect(stream, '{') == 0)
-// 		return (-1);
-
-// 	// 30/05: What are we trying to do?
-
-// 	// After {, that's LL(1). Character after character, fill the json structure,
-// 	// here, as a map: a 'pair *' data and a 'int' size. Each 'pair' are a
-// 	// 'char *' key and 'json' value;
-
-// 	c = peek(stream);
-
-
-// 	dst->map.size = 0;
-// 	while (c != EOF) // && c == '"') // c == '"' is start of a key... But what if there's none?
-// 	{
-// 		// 30/05: Dynamic array management.
-// 		if (dst->map.size == 0)
-// 		{
-// 			dst->map.data = calloc(++dst->map.size, sizeof(pair));
-// 			if (dst->map.data == NULL)
-// 				return (dst->map.size = 0, -1);
-// 		}
-// 		else
-// 		{
-// 			tmp = realloc(dst->map.data, ++dst->map.size * sizeof(pair));
-// 			if (tmp == NULL)
-// 				return (dst->map.size--, -1);
-// 			dst->map.data = tmp;
-// 		}
-
-// 		// Parsing key
-
-		
-// 		// Now you can use parse string with the key as a whoa.
-// 		pairs[size - 1].key = allocate_string(stream);
-// 		if (pairs[size - 1].key == NULL)
-// 			return (free(pairs), -1);
-
-// 		// Parsing key value separator
-// 		if (expect(stream, ':') == 0)
-// 			return (-1);
-
-// 		// Parsing value (integer, string or another map (recusion))	
-// 		parse_value(&pairs[size - 1].value, stream);
-
-// 		c = peek(stream);
-
-// 		// Parsing pair separator if exists
-// 		if (c == ',')
-// 		{
-// 			consume(stream);
-// 			c = peek(stream);
-
-// 		}
-// 	}
-
-
-// 	// end of map 
-// 	if (expect(stream, '}') == -1)
-// 		return (-1);
-
-// 	return (0);
-// }
+	if (expect(stream, '{') == 0)
+		return (-1);
+	map->data = NULL;
+	map->size = 0;
+	c = peek(stream);
+	while (c != EOF && c != '}')
+	{
+		tmp = realloc(map->data, ++map->size * sizeof(pair));
+		if (tmp == NULL)
+			return (--map->size, -1);
+		map->data = tmp;
+		curr = &map->data[map->size - 1];
+		curr->key = NULL;
+		curr->value.type = 0;
+		if (parse_string(&curr->key, stream) == -1
+			|| expect(stream, ':') == 0
+			|| parse_value(&curr->value, stream) == -1)
+			return (-1);
+		if ((c = peek(stream)) == ',')
+		{
+			accept(stream, c);
+			if ((c = peek(stream)) != '"')
+				return (unexpected(stream), -1);
+		}
+	}
+	if (expect(stream, '}') == -1)
+		return (-1);
+	return (0);
+}
