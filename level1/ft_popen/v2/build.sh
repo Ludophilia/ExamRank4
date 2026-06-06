@@ -1,0 +1,1 @@
+cc -Wall -Wextra -Werror ft_popen.c -o popen

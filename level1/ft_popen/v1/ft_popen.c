@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 20:29:35 by jegerman          #+#    #+#             */
-/*   Updated: 2026/03/26 22:00:57 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/06 17:13:06 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,11 @@ char	*get_next_line(int fd)
 	lpos = 0;
 	while (1)
 	{
-		if (bpos == 0 || bpos >= bytes)
+		if (bpos == 0 || (bpos >= bytes && !(bpos = 0)))
 		{
 			if ((bytes = read(fd, buffer, BUFFER_SIZE)) == -1)
 				return (free(line), NULL);
-			if ((bpos > 0 && (bpos = 0)) || bytes == 0)
+			if (bytes == 0)
 				break ;
 		}
 		while (bpos < bytes)
