@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/06 18:50:56 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/06 20:27:19 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/07 21:53:05 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,33 +51,48 @@ int	main(void)
 	int		fd;
 	int		ft_popen(const char *, char *const[], char);
 
-	// char	buffer[BUFFER_SIZE];
-	// int		bytes;
+	char		buffer[BUFFER_SIZE];
+	int		bytes;
 
-	// for (int i = 0; i < BUFFER_SIZE; i++)
-	// 	buffer[i] = 0;
-	// fd = ft_popen("ls", (char *const []){"ls", "-l", NULL}, 'r');
-	// if (fd == -1)
-	// 	return (1);
-	// while ((bytes = read(fd, buffer, BUFFER_SIZE)) > 0)
-	// {
-	// 	printf("%s", buffer);
-	// 	for (int i = 0; i < bytes; i++)
-	// 		buffer[i] = 0;
-	// }
-	// close(fd);
-
-	char	**strs;
-
-	fd = ft_popen("nl", (char *const []){"nl", NULL}, 'w');
+	for (int i = 0; i < BUFFER_SIZE; i++)
+		buffer[i] = 0;
+	fd = ft_popen("ls", (char *const []){"ls", "-l", NULL}, 'r');
 	if (fd == -1)
 		return (1);
-	printf("[%i] ft_popen returned: mode -> '%c' ; fd -> %i\n", getpid(), 'w', fd);
-	strs = (char *[]){"Bonjour\n", "Hello\n", "Hej\n", "As-salamu alaykum\n",
-		"Konnichiwa\n", "Aba\n", NULL};
-	for (int i = 0; strs[i]; i++)
-		dprintf(fd, "%s", strs[i]);
+	while ((bytes = read(fd, buffer, BUFFER_SIZE)) > 0)
+	{
+		printf("%s", buffer);
+		for (int i = 0; i < bytes; i++)
+			buffer[i] = 0;
+	}
 	close(fd);
+	// exit (0);
+
+	// char	**strs;
+
+	// fd = ft_popen("nl", (char *const []){"nl", NULL}, 'w');
+	// if (fd == -1)
+	// 	return (1);
+	// printf("[%i] ft_popen returned: mode -> '%c' ; fd -> %i\n", getpid(), 'w', fd);
+	// strs = (char *[]){"Bonjour\n", "Hello\n", "Hej\n", "As-salamu alaykum\n",
+	// 	"Konnichiwa\n", "Aba\n", NULL};
+	// for (int i = 0; strs[i]; i++)
+	// 	dprintf(fd, "%s", strs[i]);
+	// close(fd);
+
+
+	// fd = ft_popen("cat", (char *const []){"cat", NULL}, 'r');
+	// if (fd == -1)
+	// 	return (1);
+	// printf("[%i] ft_popen returned: mode -> '%c' ; fd -> %i\n", getpid(), 'w', fd);
+	// // strs = (char *[]){"Bonjour\n", "Hello\n", "Hej\n", "As-salamu alaykum\n",
+	// // 	"Konnichiwa\n", "Aba\n", NULL};
+
+	// char	*line = get_next_line(fd);
+	// printf("line: %s", line);
+
+	// // printf("Received: %s\n", buf);
+	// close(fd);
 	return (0);
 }
 

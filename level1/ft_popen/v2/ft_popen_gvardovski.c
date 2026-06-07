@@ -32,7 +32,8 @@ int ft_popen(char *file, char *gv[], char type)
 	if (type == 'r')
 	{
 		close(fd[1]);
-		wait(NULL);
+		wait(NULL); // same, it won't work
+		printf("ME? I WILL NEVER BE PRINTED. UNLESS ctrl + d.\n"); // ...
 		return(fd[0]);
 	}
 	else
@@ -40,7 +41,7 @@ int ft_popen(char *file, char *gv[], char type)
 		close(fd[0]);
 		printf("HELLO...\n"); // added for demo purposes
 		wait(NULL); // jegerman: it freezes while in 'w' mode... Not good :/
-		printf("ME? I WILL NEVER BE PRINTED\n"); // ...
+		printf("ME? NEITHER.\n"); // ...
 		return(fd[1]);
 	}
 }
