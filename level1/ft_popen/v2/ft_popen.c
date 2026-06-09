@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 20:29:35 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/08 19:40:29 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/09 19:48:17 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ int	ft_popen(char const *file, char *const argv[], char type)
 			(void)(close(pp[0]), close(pp[1]));
 			exit(1);
 		}
-		exit(0);
 	}
 	if ((type_r? close(pp[1]): close(pp[0])) == -1)
 		return (close(pp[0]), close(pp[1]), -1);
