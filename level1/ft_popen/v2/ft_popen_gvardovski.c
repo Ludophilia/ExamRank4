@@ -39,7 +39,7 @@ int ft_popen(char *file, char *gv[], char type)
 	else
 	{
 		close(fd[0]);
-		printf("HELLO...\n"); // added for demo purposes
+		// printf("HELLO...\n"); // added for demo purposes
 		wait(NULL); // jegerman: it freezes while in 'w' mode... Not good :/
 		printf("ME? NEITHER.\n"); // ...
 		return(fd[1]);
