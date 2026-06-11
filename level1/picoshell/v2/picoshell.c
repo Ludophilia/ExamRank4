@@ -6,98 +6,94 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/10 21:26:25 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/11 20:40:10 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
-// int	smrt_close(int *fd)
+// typedef enum e_fflg
 // {
-// 	close(*fd);
-// 	*fd = 0;
-// 	return (1);
+// 	PI0 = (1 << 0),
+// 	PI1 = (1 << 1),
+// 	LPI0 = (1 << 2)
+// }	t_fflg;
+
+// int vclose(int fd, ...)
+// {
+// 	va_list		args;
+// 	int			cur_fd;
+
+// 	va_start(args, fd);
+// 	close(fd);
+// 	while ((cur_fd = va_arg(args, int)) != 0)
+// 		close(cur_fd);
+// 	va_end(args);
+// 	return (0);
 // }
 
-// int close_all(int pi[2], int prev_rpi)
+// int	close_mult(int fd_flgs, int pi[3], int i, char ***cmds)
 // {
-// 	if (pi[0] != 0 && pi[0] != prev_rpi)
+// 	if ((fd_flgs & PI0) && cmds[i + 1])
 // 		close(pi[0]);
-// 	if (prev_rpi != 0)
-// 		close(prev_rpi);
-// 	if (pi[1] != 0)
+// 	if ((fd_flgs & PI1) && cmds[i + 1])
 // 		close(pi[1]);
-// 	return (1);
+// 	if ((fd_flgs & LPI0) && i > 0)
+// 		close(pi[2]);
+// 	return (0);
 // }
 
-// 8/06. I want to get rid of those close all and smart close functions...
+// {---(0)>cmds[0]<(4)---pipe} 
+// {---(3)>cmds[1]<(6)---pipe} 
+// {---(5)>cmds[2]...(1)}
 int	picoshell(char **cmds[])
 {
-	int		wstatus, pi[2], lpi0 = 0; // 0 init will be removed.
+	int		wstatus, pi[2], lpi0;
 	pid_t	pid;
 
 	if (cmds == NULL)
 		return (1);
-
-	// {---(0)>cmds[0]<(4)---pipe} 
-	// {---(3)>cmds[1]<(6)---pipe} 
-	// {---(5)>cmds[2]...(1)}
-
 	for (int i = 0; cmds[i]; i++)
 	{
-		// In parent
+
 		if (cmds[i][0] == NULL || (cmds[i + 1] && pipe(pi) == -1))
 			return (i && close(lpi0), 1);
-		if ((pid = fork()) == -1)
-			return (i && close(lpi0), close(pi[0]), close(pi[1]), 1);
 
-		// In children
+		if ((pid = fork()) == -1)
+			return (i && close(lpi0), cmds[i + 1] && (close(pi[0]), close(pi[1])), 1);
+
 		if (pid == 0)
 		{
-			// 10/06: Improvements are still possible
-			
-			// Why here? Cue: cmds[i + 1] is also below...
-			if (cmds[i + 1] && close(pi[0]) == -1)
-				(void)(i && close(lpi0), close(pi[1]), exit(1));
-
-			if (i)
+			if (i > 0)
 			{
 				if (dup2(lpi0, 0) == -1)
-					(void)(i && close(lpi0), close(pi[1]), exit(1));
+					(void)(close(lpi0), cmds[i + 1] && (close(pi[0]), close(pi[1])), exit(1));
 				if (close(lpi0) == -1)
-					(void)(close(pi[1]), exit(1));
+					(void)(cmds[i + 1] && (close(pi[0]), close(pi[1])), exit(1));
 			}
-
 			if (cmds[i + 1])
 			{
-				if (dup2(pi[1], 1) == -1)
+				if (close(pi[0]) == -1 || dup2(pi[1], 1) == -1)
 					(void)(close(pi[1]), exit(1));
 				if (close(pi[1]) == -1)
 					exit(1);
 			}
-		
 			if (execvp(cmds[i][0], cmds[i]) == -1)
 				exit(1);
 		}
 
-		// In parent (again)
+		if (cmds[i + 1] && close(pi[1]) == -1)
+			return (i && close(lpi0), cmds[i + 1] && close(pi[0]), 1);
 
-		// 10/06... This takes time... TO a later date then.
+		if (i > 0 && close(lpi0) == -1)
+			return (cmds[i + 1] && close(pi[0]), 1);
 
-		if (cmds[i + 1] && close(pi[i]) == -1)
-			smrt_close(pi + 1);
-		// Leave the read end open. Close the PREVIOUS read end.
-		if (i)
-			smrt_close(&lpi0);
-
-		// Close_all? Besides the read end (if exists), what do you even close?
-		// At that level, there's only the read end (if exits) that's still there.
 		if (wait(&wstatus) == -1 || WEXITSTATUS(wstatus) == 1)
-			return (close_all(pi, lpi0), 1); // Bullshit, poorly thought out...
+			return (cmds[i + 1] && close(pi[0]), 1);
 
-		// The only one that remains open... The read end.
 		lpi0 = pi[0];
 	}
 	return (0);

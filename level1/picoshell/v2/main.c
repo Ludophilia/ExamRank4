@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 19:19:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/08 19:20:07 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/11 20:44:23 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,17 +21,19 @@ int	main(void)
 	// The argv array will be transformed to a char	*** like those below
 	// following pipes position.
 	char	***cmds1, ***cmds2;
+	int		picoshell(char **[]);
+
 
 	cmds1 = (char **[])
 	{
 		(char *[]){"last", NULL},
 		(char *[]){"nl", NULL},
 		(char *[]){"head", "-5", NULL},
-		(char *[]){"tac", NULL},
-		(char *[]){"rev", NULL},
-		(char *[]){"tee", NULL},
-		(char *[]){"rev", NULL},
-		(char *[]){"sed", "s/a/b/g", NULL},
+		// (char *[]){"tac", NULL},
+		// (char *[]){"rev", NULL},
+		// (char *[]){"tee", NULL},
+		// (char *[]){"rev", NULL},
+		// (char *[]){"sed", "s/a/b/g", NULL},
 		NULL
 	};
 	cmds2 = (char **[])
@@ -39,6 +41,8 @@ int	main(void)
 		(char *[]){"/bin/ls", NULL},
 		(char *[]){"/usr/bin/grep", "picoshell", NULL},
 		(char *[]){"rev", NULL},
+		(char *[]){"rev", NULL},
+		(char *[]){"nl", NULL},
 		NULL
 	};
 	if (picoshell(cmds1) == 1)
