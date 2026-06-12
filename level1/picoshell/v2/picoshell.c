@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/12 21:41:31 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/12 22:03:02 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,8 @@
 
 int	picoshell(char **cmds[])
 {
-	int		wstatus, pi[2], lpi0; 
+	int		pi[2], lpi0;
+	// int		wstatus; // No error management right now. 
 	pid_t	pid;
 
 
@@ -84,9 +85,12 @@ int	picoshell(char **cmds[])
 		{
 			close(lpi0);
 		}
-		wait(&wstatus); // NO !!!!!!!
 		lpi0 = pi[0];
 	}
+
+	for (int i = 0; cmds[i]; i++)
+		wait(NULL);
+	
 	return (0);
 }
 
