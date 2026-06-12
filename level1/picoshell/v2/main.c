@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 19:19:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/11 20:44:23 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/12 20:09:20 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,11 @@ int	main(void)
 	char	***cmds1, ***cmds2;
 	int		picoshell(char **[]);
 
-
 	cmds1 = (char **[])
 	{
-		(char *[]){"last", NULL},
-		(char *[]){"nl", NULL},
-		(char *[]){"head", "-5", NULL},
+		(char *[]){"last", NULL}, // (0: W0, R0) (4, 3)
+		(char *[]){"nl", NULL},  // (1: lpi0 -> R0, W1, R1) (3, 4, 5) 
+		(char *[]){"head", "-5", NULL}, // (2: lpi0 -> R1)
 		// (char *[]){"tac", NULL},
 		// (char *[]){"rev", NULL},
 		// (char *[]){"tee", NULL},
