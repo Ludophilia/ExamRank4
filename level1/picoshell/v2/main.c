@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 19:19:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/12 22:04:34 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/15 18:55:50 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,16 +25,36 @@ int	main(void)
 
 	cmds1 = (char **[])
 	{
-		// (char *[]){"last", NULL}, // (0: W0, R0) (4, 3)
-		(char *[]){"sleep", "21", NULL},  // (1: lpi0 -> R0, W1, R1) (3, 4, 5)
-		// (char *[]){"sleep", "5", NULL}, // (2: lpi0 -> R1)
-		(char *[]){"/bin/ls", NULL},
+		// (char *[]){"last", NULL},
+		// (char *[]){"sleep", "7", NULL},
+		// (char *[]){"sleep", "5", NULL},
+
+		(char *[]){"echo", "'squalala'", NULL},
+		(char *[]){"cat", NULL},
+		(char *[]){"sed", "s/a/b/g", NULL},
+
+		// (char *[]){"sed", "'s/a/b/g'", NULL},
+
+		// (char *[]){"picoshell", NULL},
+
+		
+		// (char *[]){"nl", NULL},
+		// (char *[]){"nl", NULL},
+		// (char *[]){"nl", NULL},
+		// (char *[]){"head", "-19", NULL},
+		// (char *[]){"nl", NULL},
 
 		// (char *[]){"tac", NULL},
-		// (char *[]){"rev", NULL},
+		// (char *[]){"tac", NULL},
+		// (char *[]){"cat", NULL},
+		// (char *[]){"cat", NULL},
+		// (char *[]){"cat", NULL},
+		// (char *[]){"cat", NULL},
+
+		// // (char *[]){"rev", NULL},
 		// (char *[]){"tee", NULL},
 		// (char *[]){"rev", NULL},
-		// 	// (char *[]){"tac", NULL},
+		// (char *[]){"tac", NULL},
 		// (char *[]){"sed", "s/a/b/g", NULL},
 		NULL
 	};
@@ -49,7 +69,7 @@ int	main(void)
 	// 	(char *[]){"rev", NULL},
 	// 	(char *[]){"tee", NULL},
 	// 	(char *[]){"rev", NULL},
-	// 		// (char *[]){"tac", NULL},
+	//  (char *[]){"tac", NULL},
 	// 	(char *[]){"sed", "s/a/b/g", NULL},
 	// 	NULL
 	// };
