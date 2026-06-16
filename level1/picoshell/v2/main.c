@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 19:19:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/15 18:55:50 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/16 18:10:23 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,36 +25,36 @@ int	main(void)
 
 	cmds1 = (char **[])
 	{
-		// (char *[]){"last", NULL},
+		(char *[]){"last", NULL},
 		// (char *[]){"sleep", "7", NULL},
 		// (char *[]){"sleep", "5", NULL},
 
-		(char *[]){"echo", "'squalala'", NULL},
-		(char *[]){"cat", NULL},
-		(char *[]){"sed", "s/a/b/g", NULL},
+		// (char *[]){"echo", "'squalala'", NULL},
+		// (char *[]){"cat", NULL},
+		// (char *[]){"sed", "s/a/b/g", NULL},
 
 		// (char *[]){"sed", "'s/a/b/g'", NULL},
 
 		// (char *[]){"picoshell", NULL},
 
 		
-		// (char *[]){"nl", NULL},
-		// (char *[]){"nl", NULL},
-		// (char *[]){"nl", NULL},
-		// (char *[]){"head", "-19", NULL},
-		// (char *[]){"nl", NULL},
+		(char *[]){"nl", NULL},
+		(char *[]){"nl", NULL},
+		(char *[]){"nl", NULL},
+		(char *[]){"head", "-19", NULL},
+		(char *[]){"nl", NULL},
 
-		// (char *[]){"tac", NULL},
-		// (char *[]){"tac", NULL},
-		// (char *[]){"cat", NULL},
-		// (char *[]){"cat", NULL},
-		// (char *[]){"cat", NULL},
-		// (char *[]){"cat", NULL},
+		(char *[]){"tac", NULL},
+		(char *[]){"tac", NULL},
+		(char *[]){"cat", NULL},
+		(char *[]){"cat", NULL},
+		(char *[]){"cat", NULL},
+		(char *[]){"cat", NULL},
 
-		// // (char *[]){"rev", NULL},
-		// (char *[]){"tee", NULL},
 		// (char *[]){"rev", NULL},
-		// (char *[]){"tac", NULL},
+		(char *[]){"tee", NULL},
+		// (char *[]){"rev", NULL},
+		(char *[]){"tac", NULL},
 		// (char *[]){"sed", "s/a/b/g", NULL},
 		NULL
 	};
@@ -73,15 +73,15 @@ int	main(void)
 	// 	(char *[]){"sed", "s/a/b/g", NULL},
 	// 	NULL
 	// };
-	cmds2 = (char **[])
-	{
-		(char *[]){"/bin/ls", NULL},
-		(char *[]){"/usr/bin/grep", "picoshell", NULL},
-		(char *[]){"rev", NULL},
-		(char *[]){"rev", NULL},
-		(char *[]){"nl", NULL},
-		NULL
-	};
+	// cmds2 = (char **[])
+	// {
+	// 	(char *[]){"/bin/ls", NULL},
+	// 	(char *[]){"/usr/bin/grep", "picoshell", NULL},
+	// 	(char *[]){"rev", NULL},
+	// 	(char *[]){"rev", NULL},
+	// 	(char *[]){"nl", NULL},
+	// 	NULL
+	// };
 	if (picoshell(cmds1) == 1)
 		return (1);
 
