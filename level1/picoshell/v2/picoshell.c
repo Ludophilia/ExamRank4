@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 01:11:36 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/16 19:26:02 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/16 20:48:20 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,16 +57,21 @@ int	picoshell(char **cmds[])
 			return (CL(PALL), 1);
 		if (pid == 0)
 		{
-			if (i > 0 && dup2(f.lpi0, 0) == -1)
-				CLEX(PALL, 1);
-			if (i > 0 && close(f.lpi0) == -1)
-				CLEX(P0P1, 1);
-			if (cmds[i + 1] && close(f.pi[0]) == -1)
-				CLEX(P1, 1);
-			if (cmds[i + 1] && dup2(f.pi[1], 1) == -1)
-				CLEX(P1, 1);
-			if (cmds[i + 1] && close(f.pi[1]) == -1)
-				exit(1);
+			if (i > 0)
+			{
+				if (dup2(f.lpi0, 0) == -1)
+					CLEX(PALL, 1);
+				if (close(f.lpi0) == -1)
+					CLEX(P0P1, 1);
+			}
+			if (cmds[i + 1])
+			{
+				if (close(f.pi[0]) == -1
+					|| dup2(f.pi[1], 1) == -1)
+					CLEX(P1, 1);
+				if (close(f.pi[1]) == -1)
+					exit(1);
+			}
 			execvp(cmds[i][0], cmds[i]);
 			exit(1);
 		}
@@ -81,3 +86,44 @@ int	picoshell(char **cmds[])
 			werrors++;
 	return (werrors? 1 : 0);
 }
+
+// Less lines, but maybe less easily readable??
+// int	picoshell(char **cmds[])
+// {
+// 	t_fds		f;
+// 	pid_t		pid;
+// 	int			wstatus, werrors = 0;
+
+// 	for (int i = 0; cmds[i]; i++)
+// 	{
+// 		if (cmds[i + 1] && pipe(f.pi) == -1)
+// 			return (CL(P0L), 1);
+// 		pid = fork();
+// 		if (pid == -1)
+// 			return (CL(PALL), 1);
+// 		if (pid == 0)
+// 		{
+// 			if (i > 0 && dup2(f.lpi0, 0) == -1)
+// 				CLEX(PALL, 1);
+// 			if (i > 0 && close(f.lpi0) == -1)
+// 				CLEX(P0P1, 1);
+// 			if (cmds[i + 1] && close(f.pi[0]) == -1)
+// 				CLEX(P1, 1);
+// 			if (cmds[i + 1] && dup2(f.pi[1], 1) == -1)
+// 				CLEX(P1, 1);
+// 			if (cmds[i + 1] && close(f.pi[1]) == -1)
+// 				exit(1);
+// 			execvp(cmds[i][0], cmds[i]);
+// 			exit(1);
+// 		}
+// 		if (i > 0 && close(f.lpi0) == -1)
+// 			return (CL(P0), 1);
+// 		if (cmds[i + 1] && close(f.pi[1]) == -1)
+// 			return (CL(P0 | P0L), 1);
+// 		f.lpi0 = cmds[i + 1]? f.pi[0]: -1;
+// 	}
+// 	for (int j = 0; cmds[j]; j++)
+// 		if (wait(&wstatus) == -1 || WEXITSTATUS(wstatus) == 1)
+// 			werrors++;
+// 	return (werrors? 1 : 0);
+// }
