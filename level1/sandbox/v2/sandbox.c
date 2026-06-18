@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 20:40:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/16 20:18:55 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/18 19:30:29 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,19 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	pid_t	pid;
 	int		wstatus;
 
-	if (f == NULL || timeout == 0)
+	if (f == NULL)
 		return (-1);
 	pid = fork();
 	if (pid == -1)
 		return (-1);
 	if (pid == 0)
 	{
+		printf("child pid: %i\n", getpid());
 		alarm(timeout);
 		f();
 		exit(0);
 	}
+	printf("parent pid: %i\n", getpid());
 	if (waitpid(pid, &wstatus, 0) == -1)
 		return (-1);
 	if (WIFEXITED(wstatus))

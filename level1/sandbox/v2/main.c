@@ -6,12 +6,15 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 20:10:13 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/16 20:18:22 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/18 19:29:55 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <signal.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void	test_sigabort(void) { abort(); }
 
@@ -36,9 +39,12 @@ void	test_exit_0(void) { exit(0); }
 
 void	test_timeout(void) { pause(); }
 
+void	test_sigstop(void) { raise(SIGSTOP); }
+
+
 int	main(void)
 {
 	int	sandbox(void (*)(void), unsigned int, bool);
 
-	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 1, true));
+	printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 0, true));
 }
