@@ -31,11 +31,24 @@ int sandbox(void (*f)(void), unsigned int timeout, bool verbose)
         return (-1);
     if( pid == 0)
     {
+    	alarm(timeout);
+		signal(SIGALRM, SIG_IGN);
         f();
         exit(0);
     }
     // child_pid = pid;
     alarm(timeout);
+	// (jgerman): OK I get the strategy.
+	// 0/ Changing the default SIGALRM disposition (Terminate process, "Alarm Clock"
+	// on STDOUT) with the signal handler alarm_handler.
+	// 1/ Scheduling SIGALARM in the parent with alarm (much secure, the function
+	// can't set anything to )
+	// 2/ Waiting undefinitely: note no WUNTRACED option to report status of
+	// stopped children
+	// 3/ SIGALARM will be sent by the kernel, and the signal handler will
+	// interrupt to waitpid, raising a EINTR.
+	// 4/ SA_RESTART flag could have been or-bitwis'd into sa_flags to avoid
+	// EINTR but that's the strategy here...
     if(waitpid(pid, &status, 0) == -1)
     {
         if(errno == EINTR)
