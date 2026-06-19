@@ -31,8 +31,8 @@ int sandbox(void (*f)(void), unsigned int timeout, bool verbose)
         return (-1);
     if( pid == 0)
     {
-    	alarm(timeout);
-		signal(SIGALRM, SIG_IGN);
+    	// alarm(timeout); (jegerman)
+		// signal(SIGALRM, SIG_IGN); (jegerman)
         f();
         exit(0);
     }
@@ -41,8 +41,9 @@ int sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	// (jgerman): OK I get the strategy.
 	// 0/ Changing the default SIGALRM disposition (Terminate process, "Alarm Clock"
 	// on STDOUT) with the signal handler alarm_handler.
-	// 1/ Scheduling SIGALARM in the parent with alarm (much secure, the function
-	// can't set anything to )
+	// 1/ Scheduling SIGALARM in the parent with alarm (much secure, that way the 
+	// sandboxed function can't do signal(SIGALRM, SIG_IGN) to ignore sigalarm
+	// in the child)
 	// 2/ Waiting undefinitely: note no WUNTRACED option to report status of
 	// stopped children
 	// 3/ SIGALARM will be sent by the kernel, and the signal handler will
