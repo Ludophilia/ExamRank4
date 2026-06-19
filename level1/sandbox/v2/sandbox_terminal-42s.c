@@ -47,7 +47,7 @@ int sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	// 2/ Waiting undefinitely: note no WUNTRACED option to report status of
 	// stopped children
 	// 3/ SIGALARM will be sent by the kernel, and the signal handler will
-	// interrupt to waitpid, raising a EINTR.
+	// have to interrupt waitpid, raising a EINTR.
 	// 4/ SA_RESTART flag could have been or-bitwis'd into sa_flags to avoid
 	// EINTR but that's the strategy here...
     if(waitpid(pid, &status, 0) == -1)

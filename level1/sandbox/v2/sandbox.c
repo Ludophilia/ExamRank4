@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 20:40:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/18 19:30:29 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/19 22:05:27 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,13 +32,21 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	if (pid == 0)
 	{
 		printf("child pid: %i\n", getpid());
-		alarm(timeout);
+		alarm(timeout); // ARE YOU SURE ABOUT THAT?
+		// signal(SIGALRM, SIG_IGN); // pwnd??? ;)
 		f();
 		exit(0);
 	}
 	printf("parent pid: %i\n", getpid());
-	if (waitpid(pid, &wstatus, 0) == -1)
+	if (waitpid(pid, &wstatus, 0) == -1) // WUNTRACED
 		return (-1);
+
+	// without WUNTRACED, wait will never react to a signal that is stopped... 
+    // if(waitpid(pid, &status, WUNTRACED) == -1) 
+    // {
+	// if (WIFSTOPPED(status)) 
+	// 	printf("Children 've been stopped. Yeah, that sucks...\n");
+		
 	if (WIFEXITED(wstatus))
 	{
 		if (WEXITSTATUS(wstatus) == 0)

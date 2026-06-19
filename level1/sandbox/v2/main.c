@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 20:10:13 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/19 21:10:20 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/19 22:03:01 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	test_sigint(void) { raise(SIGINT); }
 void	test_sigquit(void) { raise(SIGQUIT); }
 
 void	test_sigpipe(void) { int fds[2]; pipe(fds); close(fds[0]); 
-	 write(fds[1], "42", 2); write(1, "Do you see it (spoiler: no)? \n", 15);  
+	 write(fds[1], "42", 2); write(1, "Do you see that line (spoiler: no)? \n", 15);  
 	/* close(fds[1]); (useless) */ }
 
 void	test_segfault(void) { *(int *)0 = 42; }
@@ -40,11 +40,18 @@ void	test_exit_0(void) { exit(0); }
 
 void	test_timeout(void) { pause(); }
 
+void	test_evil_timeout(void) { signal(SIGALRM, SIG_IGN); /* pwnd ;)*/ pause(); }
+
 void	test_sigstop(void) { raise(SIGSTOP); }
 
 int	main(void)
 {
 	int	sandbox(void (*)(void), unsigned int, bool);
 
-	printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 4, true));
+	printf("== TEST TIMEOUT ==\n");
+	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 1, true));
+	printf("== TEST EVIL TIMEOUT ==\n");
+	printf("-> sandbox exit: %i\n", sandbox(test_evil_timeout, 1, true));
+	// printf("== TEST SIGSTOP ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
 }
