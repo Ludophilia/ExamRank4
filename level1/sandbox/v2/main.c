@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 20:10:13 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/24 15:37:57 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/24 21:57:46 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,9 @@ void	test_evil_timeout(void) { signal(SIGALRM, SIG_IGN); /* pwnd ;)*/ pause(); }
 
 void	test_sigstop(void) { raise(SIGSTOP); }
 
+void	test_sigtstp(void) { raise(SIGTSTP); }
+
+
 int	main(void)
 {
 	int	sandbox(void (*)(void), unsigned int, bool);
@@ -52,11 +55,23 @@ int	main(void)
 	// the child... 
 
 	printf("== TEST TIMEOUT ==\n");
-	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 1, true));
+	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 3, true));
 
 	printf("== TEST EVIL TIMEOUT ==\n");
-	printf("-> sandbox exit: %i\n", sandbox(test_evil_timeout, 1, true));
+	printf("-> sandbox exit: %i\n", sandbox(test_evil_timeout, 5, true));
 
-	// printf("== TEST SIGSTOP ==\n");
-	// printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
+	printf("== TEST SIGSTOP ==\n");
+	printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
+
+	// printf("== TEST SIGTSTP ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigtstp, 3, true));
+
+	// printf("== TEST SIGABORT ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigabort, 1, true));
+
+	// printf("== TEST SIGFPE ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigfpe, 7, true));
+
+	// printf("== TEST SIGPIPE ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigpipe, 7, true));
 }
