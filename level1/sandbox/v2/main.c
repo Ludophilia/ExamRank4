@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 20:10:13 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/19 22:03:01 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/24 15:37:57 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,15 @@ int	main(void)
 {
 	int	sandbox(void (*)(void), unsigned int, bool);
 
+	// Goal: Maintain timeout functionality while avoiding sigalarm deactivation in
+	// the child... 
+
 	printf("== TEST TIMEOUT ==\n");
 	printf("-> sandbox exit: %i\n", sandbox(test_timeout, 1, true));
+
 	printf("== TEST EVIL TIMEOUT ==\n");
 	printf("-> sandbox exit: %i\n", sandbox(test_evil_timeout, 1, true));
+
 	// printf("== TEST SIGSTOP ==\n");
 	// printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
 }
