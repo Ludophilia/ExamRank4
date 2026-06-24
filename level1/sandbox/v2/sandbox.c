@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 20:40:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/24 22:29:44 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/24 23:14:49 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,51 +33,35 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	struct sigaction	sa;
 
 	g_sig_trackr = 0;
-	if (f == NULL)
+	if (f == NULL
+		|| (pid = fork()) == -1)
 		return (-1);
-
-
-	pid = fork();
-	if (pid == -1)
-		return (-1);
-
-
 	if (pid == 0)
 	{
-		printf("child pid: %i\n", getpid());
-		// signal(SIGALRM, SIG_IGN); // pwnd??? ;)
 		f();
 		exit(0);
 	}
-
-	alarm(timeout); // HERE?
-
-
+	alarm(timeout);
 	sa.sa_handler = sigalarm_handler;
 	sa.sa_flags = 0;
-	sigfillset(&sa.sa_mask); // returns -1 on error.
-
-
-
-	sigaction(SIGALRM, &sa, NULL); //
-
-
-	printf("parent pid: %i\n", getpid());
-	if (waitpid(pid, &wstatus, WUNTRACED) == -1 && g_sig_trackr == 0)
+	if (sigfillset(&sa.sa_mask) == -1
+		|| sigaction(SIGALRM, &sa, NULL) == -1
+		|| (waitpid(pid, &wstatus, WUNTRACED) == -1 && g_sig_trackr == 0))
 		return (-1);
 
 
+
+
+	// 25/06: Please improve the structure
+	// Why not move it to another function?
+		
 	if (g_sig_trackr)
 	{
 		kill(pid, SIGTERM);
-		printf("wait -> %i\n", waitpid(pid, NULL, 0));
-		// printf("errno: %i, %s\n", errno, strerror(errno));
-		printf("Timed out after %i seconds\n", timeout);
+		waitpid(pid, NULL, 0);
 		return (0);
 	}
-	// without WUNTRACED, wait will never react to a signal that is stopped... 
-    // if(waitpid(pid, &status, WUNTRACED) == -1) 
-    // {
+
 	if (WIFSTOPPED(wstatus)) // Incomplete 
 	{
 		printf("Signal stopped\n"); //by %s\n", strsignal(WSTOPSIG(wstatus)));
