@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 20:10:13 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/25 14:59:33 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/25 21:49:31 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,20 @@ int	main(void)
 	// Goal: Maintain timeout functionality while avoiding sigalarm deactivation in
 	// the child... 
 
+	printf("== TEST NICE ==\n");
+	printf("-> sandbox exit: %i\n", sandbox(test_exit_0, 3, true));
+
 	// printf("== TEST TIMEOUT ==\n");
 	// printf("-> sandbox exit: %i\n", sandbox(test_timeout, 3, true));
 
 	// printf("== TEST EVIL TIMEOUT ==\n");
 	// printf("-> sandbox exit: %i\n", sandbox(test_evil_timeout, 5, true));
 
-	printf("== TEST SIGSTOP ==\n");
-	printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
+	// printf("== TEST SIGSTOP ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigstop, 3, true));
 
-	printf("== TEST SIGTSTP ==\n");
-	printf("-> sandbox exit: %i\n", sandbox(test_sigtstp, 3, true));
+	// printf("== TEST SIGTSTP ==\n");
+	// printf("-> sandbox exit: %i\n", sandbox(test_sigtstp, 3, true));
 
 	// printf("== TEST SIGABORT ==\n");
 	// printf("-> sandbox exit: %i\n", sandbox(test_sigabort, 1, true));
