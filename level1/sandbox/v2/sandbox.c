@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 20:40:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/25 23:02:50 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/25 23:08:34 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ int	print_msg(int id, void *arg, bool vrb)
 		printf("Bad function: exited with code %i\n", *(int *)arg);
 		break;
 	case BAD_SIG:
-		printf("Bad function: %s\n", *(char *)arg);
+		printf("Bad function: %s\n", strsignal(*(int *)arg));
 		break;
 	case BAD_TMO:
 		printf("Bad function: timed out after %u seconds\n", *(unsigned *)arg);		
