@@ -6,27 +6,26 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/06/29 21:47:48 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/06/30 21:00:04 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <stdio.h>
 #include <wait.h>
+#include <string.h>
 
-// Builtin c
+// 30/06: Builtin cd management is missing...
 
-// ==
+// 30/06: Error handling is missing...
 
-char **create_cmd(char **argv, int *i)
+char **create_cmd(char **argv, int *i, int *cmd_nb)
 {
 	int		size;
 	char	**cmd;
 	int		j;
 
-	argv += *i;
 	size = 0;
 	while (argv[size]
 		&& strncmp(argv[size], "|", 2) != 0
@@ -37,59 +36,82 @@ char **create_cmd(char **argv, int *i)
 		return (NULL);
 	j = -1;
 	while (++j < size)
-		cmd[j] = argv[j]; // No strdup?
+		cmd[j] = argv[j];
 	cmd[j] = 0;
-	return (*i += size, cmd);
+	return (*i += size, *cmd_nb += 1, cmd);
 }
 
 // $>./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
+// microshell
+// i love my microshell
 int microshell(int argc, char **argv, char **envp)
-{
-	int 	i;
-	
+{	
 	int 	wstatus;
 	pid_t 	pid;
-	
-	int 	fds[2];
+
+	int 	pi[2];
+	int		last_pi0;
 	char 	**cmds;
 
+	int 	i;
+	int		cmds_nb;
+
 	i = 0;
+	cmds_nb = 0;
+
+	// 30/06: ';' management is missing for now...
 	while (i < argc)
 	{
-		// printf("%s\n", argv[i++]);
+		// printf("[1] i -> %i / argc -> %i\n", i, argc);
+		// printf("%s\n", argv[i]);
+		// fflush(NULL);
 
-		if ((cmds = create_cmd(argv, &i)) == NULL)
+		if ((cmds = create_cmd(argv + i, &i, &cmds_nb)) == NULL)
 			return (-1);
 
-		if (strncmp(argv[i], "|", 2) == 0)
-			pipe(fds); // i++; ???
-
-		// while ()
+		// printf("[2] i -> %i / argc -> %i\n", i, argc);
+		// printf("%s\n", argv[i]);
+		// fflush(NULL);
+			
+		if (argv[i] && strncmp(argv[i], "|", 2) == 0)
+			(void)(pipe(pi), i++); // ???
 
 		if ((pid = fork()) == -1)
 			return (-1);
 
 		if (pid == 0)
 		{
-			close();
-			dup2( , 0);
-			close();
-			dup2( , 1);
+			if (argv[i])
+				close(pi[0]);
 
-			// if (command == cd) // there's a pipe...?
-			//	....
-			// else
-			// execve(*cmds, cmds, envp); // char **cmds
-			// exit(1);
+			if (cmds_nb > 1)
+			{
+				dup2(last_pi0, 0);
+				close(last_pi0);
+			}
+			if (argv[i])
+			{
+				dup2(pi[1], 1);
+				close(pi[1]);
+			}
+
+			execve(*cmds, cmds, envp); // char **cmds
+			exit(1);
 		}
 
-		// waitpid(pid, &wstatus, 0);
-
+		free(cmds);
 		
-		free(cmds); // free the char **?
+		if (argv[i])
+			close(pi[1]);
+		if (cmds_nb > 1)
+			close(last_pi0);
+		
 
-		i++; // WTF?
+		last_pi0 = argv[i] ? pi[0] : -1;
 	}
+
+	for (int j = 0; j < cmds_nb; j++)
+		waitpid(pid, &wstatus, 0);
 
 	return (0);
 }
@@ -101,9 +123,5 @@ int main(int argc, char **argv, char **envp)
 
 	microshell(--argc, ++argv, envp);
 
-	// return ();
+	return (0);
 }
-
-// $>./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
-// microshell
-// i love my microshell
