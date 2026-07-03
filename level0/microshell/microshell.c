@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/02 22:04:41 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/03 22:18:09 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,9 @@
 #include <wait.h>
 #include <string.h>
 
-// 30/06: Error handling is missing...
+// 3/07: Error handling is incomplete...
 
-
-// 30/06: Builtin cd management is missing...
+// 3/07: Builtin cd management is still not yet functional...
 
 int	builtin_cd(char *path)
 {
@@ -27,41 +26,41 @@ int	builtin_cd(char *path)
 	chdir(path);
 }
 
-
-// 30/06: ';' management is missing for now...
-
-// WHat's for?
-
-// Separates pipelines.
-//	sleep 10 | sleep 11 ; sleep 12
-//		sleep 10 and 11 are executed first in parallel, THEN sleep 12 alone
-// sleep 10 | echo a ; echo b
-//		sleep 10 and echo a are executed first in parallel. a is printed on
-// 		stdout. b is printed once the pipeline is done.
-
-char **create_cmd(char **argv, int *i, int *cmd_nb)
+int	create_cmd(char **toks, int *cmds_total, char ***cmd)
 {
 	int		size;
-	char	**cmd;
 	int		j;
 
 	size = 0;
-	while (argv[size]
-		&& strncmp(argv[size], "|", 2) != 0
-		&& strncmp(argv[size], ";", 2) != 0)
+	while (toks[size]
+		&& strncmp(toks[size], "|", 2) != 0
+		&& strncmp(toks[size], ";", 2) != 0)
 		size++;
-	cmd = malloc((size + 1) * sizeof(char *));
-	if (cmd == NULL)
-		return (NULL);
+	*cmd = malloc((size + 1) * sizeof(char *));
+	if (*cmd == NULL)
+		return (-1);
 	j = -1;
 	while (++j < size)
-		cmd[j] = argv[j];
-	cmd[j] = 0;
-	return (*i += size, *cmd_nb += 1, cmd);
+		(*cmd)[j] = toks[j];
+	(*cmd)[j] = 0;
+	return (*cmds_total += 1, size);
 }
 
-int exec_cmd(int *pi, char *cur_arg, char **cmd, int cmds_nb, char **envp) // Norm!! (5 args)
+int exec_cmd(int *pi, char **cmd, int cmds_nb, char **envp)
 {
+	// cur_arg, cmds_nb...
+
+	// Reasons:
+
+	// cur_arg -> helps with understand if there's something after the pipe.
+	//		= And what if there NO pipe?
+
+	//     There's a problem here.
+
+
+	// cmds_nb -> helps understanding the command's position in the 
+	// pipeline and the necessity to use last pipe's read end at pi[2]
+	
 	pid_t	pid;
 
 	if ((pid = fork()) == -1)
@@ -81,6 +80,7 @@ int exec_cmd(int *pi, char *cur_arg, char **cmd, int cmds_nb, char **envp) // No
 			close(pi[1]);
 		}
 		execve(*cmd, cmd, envp);
+		free(cmd);
 		exit(1);
 
 	}
@@ -92,65 +92,81 @@ int exec_cmd(int *pi, char *cur_arg, char **cmd, int cmds_nb, char **envp) // No
 	return (0);
 }
 
-int	exec_pipeline(int *i, int argc, char **argv, char **envp)
+// return the offset or -1. I want to see i making progress.
+// int	exec_pipeline(int *i, int argc, char **argv, char **envp)
+int	exec_pipeline(char **toks, char **envp)
 {
+	// BLOATED
+	int		cmds_total;
+	int		i;
+	int		toks_usd;
 	int		pi[3];
-	int		cmds_nb;
 	char	**cmd;
+	
 	int		wstatus;
 
-	cmds_nb = 0;
-	while (*i < argc && strncmp(argv[*i], ";", 2) != 0)
+	i = 0;
+	cmds_total = 0;
+	while (toks[i] && strncmp(toks[i], ";", 2) != 0)
 	{
-		
-		if ((cmd = create_cmd(argv + *i, i, &cmds_nb)) == NULL)
+		if ((toks_usd = create_cmd(toks + i, &cmds_total, &cmd)) == -1)
 			return (-1);
+		i += toks_usd;
+		
+		if (toks[i] && strncmp(toks[i], "|", 2) == 0)
+		{
+			pipe(pi); // FEAR ME. I WILL HAUNT YOUR DEBUGGING EFFORTS.
+			i++;
+		}
 
-		if (argv[*i] && strncmp(argv[*i], "|", 2) == 0)
-			(void)(pipe(pi), *i += 1);
+		// What's the problem here?
+
+		// We have to exec the command.
+		// 
 	
-		exec_cmd(pi, argv[*i], cmd, cmds_nb, envp);
+		exec_cmd(pi, toks[i], cmd, cmds_total, envp);
 
 		free(cmd);
-		pi[2] = argv[*i]  && strncmp(argv[*i] , ";", 2) != 0 ? pi[0] : -1;
+		pi[2] = toks[i] && strncmp(toks[i] , ";", 2) != 0 ? pi[0] : -1;
 	}
-	for (int j = 0; j < cmds_nb; j++)
+	
+	// wstatus error handling...
+	for (int j = 0; j < cmds_total; j++)
 		waitpid(-1, &wstatus, 0);
 	return (0);
 }
 
+
 // $>./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
 // microshell
 // i love my microshell
-
 
 // ./microshell /usr/bin/sleep 10 "|" /usr/bin/echo a ";" /usr/bin/echo b
 
 // ./microshell /usr/bin/echo a ";" /usr/bin/echo b
 // ./microshell /usr/bin/echo a ";"
 
-int microshell(int argc, char **argv, char **envp)
-{	
-	int 	i;
+int microshell(char **toks, char **envp)
+{
+	int		i;
+	int		toks_usd;
 
 	i = 0;
-
-	while (i < argc)
+	while (toks[i])
 	{
-		exec_pipeline(&i, argc, argv, envp);
-		if (argv[i] && strncmp(argv[i], ";", 2) == 0)
+		if ((toks_usd = exec_pipeline(toks + i, envp)) == -1)
+			return (-1);
+		i += toks_usd;
+		if (toks[i] && strncmp(toks[i], ";", 2) == 0)
 			i++;
 	}
-
 	return (0);
 }
 
-int main(int argc, char **argv, char **envp)
+int	main(int argc, char **argv, char **envp)
 {
-	if (argc == 1)
+	if (argc == 1
+		|| microshell(++argv, envp) == -1)
 		return (1);
-
-	microshell(--argc, ++argv, envp);
-
 	return (0);
 }
