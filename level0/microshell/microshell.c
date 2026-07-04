@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/03 22:18:09 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/04 23:09:40 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 #include <stdio.h>
 #include <wait.h>
 #include <string.h>
+
+typedef struct s_cnt
+{
+	int		cmds;
+	int		pi;
+}	t_cnt;
 
 // 3/07: Error handling is incomplete...
 
@@ -26,8 +32,9 @@ int	builtin_cd(char *path)
 	chdir(path);
 }
 
-int	create_cmd(char **toks, int *cmds_total, char ***cmd)
+char **create_cmd(char **toks, t_cnt *ct, int *i)
 {
+	char	**cmd;
 	int		size;
 	int		j;
 
@@ -36,103 +43,98 @@ int	create_cmd(char **toks, int *cmds_total, char ***cmd)
 		&& strncmp(toks[size], "|", 2) != 0
 		&& strncmp(toks[size], ";", 2) != 0)
 		size++;
-	*cmd = malloc((size + 1) * sizeof(char *));
-	if (*cmd == NULL)
+	cmd = malloc((size + 1) * sizeof(char *));
+	if (cmd == NULL)
 		return (-1);
 	j = -1;
 	while (++j < size)
-		(*cmd)[j] = toks[j];
-	(*cmd)[j] = 0;
-	return (*cmds_total += 1, size);
+		cmd[j] = toks[j];
+	cmd[j] = 0;
+	return (ct->cmds += 1, *i += size, cmd);
 }
 
-int exec_cmd(int *pi, char **cmd, int cmds_nb, char **envp)
-{
-	// cur_arg, cmds_nb...
-
-	// Reasons:
-
-	// cur_arg -> helps with understand if there's something after the pipe.
-	//		= And what if there NO pipe?
-
-	//     There's a problem here.
-
-
-	// cmds_nb -> helps understanding the command's position in the 
-	// pipeline and the necessity to use last pipe's read end at pi[2]
-	
+int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
+{	
 	pid_t	pid;
 
 	if ((pid = fork()) == -1)
 		return (-1);
 	if (pid == 0)
 	{
-		if (cur_arg && strncmp(cur_arg, ";", 2) != 0)
+
+		// if there's a new pipe just opened before? (That's it?)
+		if (ct->pi > 0)
 			close(pi[0]);
-		if (cmds_nb > 1)
+
+		// int cmds_nb -> helps understanding the command's position in the 
+		// pipeline and the necessity to use last pipe's read end at pi[2]
+		// if there's at least two commands, meaning there are two pipes opened,
+		// the first one likely only with its read end...
+		if (ct->cmds > 1)
 		{
 			dup2(pi[2], 0);
 			close(pi[2]);
 		}
-		if (cur_arg && strncmp(cur_arg, ";", 2) != 0)
+		if (ct->pi > 0)
 		{
 			dup2(pi[1], 1);
 			close(pi[1]);
 		}
+	
 		execve(*cmd, cmd, envp);
 		free(cmd);
 		exit(1);
 
 	}
-	if (cur_arg && strncmp(cur_arg, ";", 2) != 0)
+
+
+	if (ct->pi > 0)
 		close(pi[1]);
-	if (cmds_nb > 1)
+	if (ct->cmds > 1)
 		close(pi[2]);
 
 	return (0);
 }
 
-// return the offset or -1. I want to see i making progress.
-// int	exec_pipeline(int *i, int argc, char **argv, char **envp)
 int	exec_pipeline(char **toks, char **envp)
 {
-	// BLOATED
-	int		cmds_total;
-	int		i;
-	int		toks_usd;
-	int		pi[3];
+	// (LESS) BLOATED
 	char	**cmd;
-	
+	int		pi[3];
 	int		wstatus;
-
+	t_cnt	ct;
+	int		i;
+	
 	i = 0;
-	cmds_total = 0;
+	ct.cmds = 0;
+	ct.pi = 0;
 	while (toks[i] && strncmp(toks[i], ";", 2) != 0)
 	{
-		if ((toks_usd = create_cmd(toks + i, &cmds_total, &cmd)) == -1)
+		// Current: Pipeline with 1 command, no pipe. What's supposed to happen.
+	
+		if ((cmd = create_cmd(toks + i, &ct, &i)) == NULL)
 			return (-1);
-		i += toks_usd;
-		
+
+
 		if (toks[i] && strncmp(toks[i], "|", 2) == 0)
 		{
-			pipe(pi); // FEAR ME. I WILL HAUNT YOUR DEBUGGING EFFORTS.
+			pipe(pi);
 			i++;
+			ct.pi++;
 		}
-
-		// What's the problem here?
-
-		// We have to exec the command.
-		// 
+		
+		exec_cmd(cmd, &ct, pi, envp);
 	
-		exec_cmd(pi, toks[i], cmd, cmds_total, envp);
 
-		free(cmd);
-		pi[2] = toks[i] && strncmp(toks[i] , ";", 2) != 0 ? pi[0] : -1;
+		free(cmd);		
+		pi[2] = ct.pi > 0 ? ct.pi--, pi[0] : -1;
 	}
 	
 	// wstatus error handling...
-	for (int j = 0; j < cmds_total; j++)
+	for (int j = 0; j < ct.cmds; j++)
 		waitpid(-1, &wstatus, 0);
+
+	// Reminder: We're supposed to return the number of token consumed...
 	return (0);
 }
 
