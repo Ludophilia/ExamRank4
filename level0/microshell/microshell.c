@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/06 20:36:08 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/06 21:36:47 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ typedef struct s_cnt
 	int		pi;
 	int		toks;
 }	t_cnt;
-
-// 3/07: Error handling is incomplete...
 
 int	ft_strlen(char *str)
 {
@@ -73,6 +71,8 @@ int	create_cmd(char **toks, char ***cmd, t_cnt *ct)
 	return (ct->toks = size);
 }
 
+// 3/07: Error handling is incomplete...
+
 int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
 {	
 	pid_t	pid;
@@ -97,6 +97,7 @@ int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
 
 		execve(*cmd, cmd, envp);
 		free(cmd);
+		printf("Failure\n"); // REMV
 		exit(1);
 	}
 
@@ -108,6 +109,9 @@ int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
 	return (0);
 }
 
+#include <errno.h> // What?
+
+// 3/07: Error handling is incomplete...
 int	exec_pipeline(char **toks, char **envp, int *toks_usd)
 {
 	char	**cmd;
@@ -122,7 +126,8 @@ int	exec_pipeline(char **toks, char **envp, int *toks_usd)
 	while (toks[i] && strncmp(toks[i], ";", 2) != 0)
 	{
 		if (create_cmd(toks + i, &cmd, &ct) == -1)
-			return (-1);
+			return (printf("createcmd fail\n"), -1);
+	
 		i += ct.toks;
 		if (toks[i] && strncmp(toks[i], "|", 2) == 0)
 		{
@@ -132,36 +137,49 @@ int	exec_pipeline(char **toks, char **envp, int *toks_usd)
 			ct.pi++;
 			i++;
 		}
+	
+
+		// if (strncmp(*cmd, "cd", 3) == 0 && builtin_cd(cmd, ct.toks) == -1)
+		// 	return (-1);
+		// else
+		// 	exec_cmd(cmd, &ct, pi, envp);
+
+
 		if (strncmp(*cmd, "cd", 3) == 0)
-			builtin_cd(cmd, ct.toks);
+		{
+			ct.cmds--;
+			if (builtin_cd(cmd, ct.toks) == -1)
+				return (printf("cd fail\n"), -1);
+		}
 		else
 			exec_cmd(cmd, &ct, pi, envp);
+
+
+		// if (strncmp(*cmd, "cd", 3) == 0)
+		// 	builtin_cd(cmd, ct.toks);
+		// else
+		// 	exec_cmd(cmd, &ct, pi, envp);
+
+
+
 		free(cmd);
 		pi[2] = ct.pi > 0 ? (ct.pi--, pi[0]) : -1;
 	}
+
+
+	int errors;
 	
+	errors = 0;
 	for (int j = 0; j < ct.cmds; j++)
-		waitpid(-1, &wstatus, 0);
+	{
+		if ((waitpid(-1, &wstatus, 0) == -1 && printf("wait fail: %s\n", strerror(errno)))|| WEXITSTATUS(wstatus) == 1)
+			errors++;
+	}
+	if (errors > 0)
+		return (-1);
 
 	return (*toks_usd = i);
 }
-
-
-// $>./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
-// microshell
-// i love my microshell
-
-// ./microshell /usr/bin/sleep 10 "|" /usr/bin/echo a ";" /usr/bin/echo b
-
-// ./microshell /usr/bin/echo a ";" /usr/bin/echo b
-// ./microshell /usr/bin/echo a ";"
-
-/* 
-valgrind --track-fds=yes ./microshell /usr/bin/last 
-"|" /usr/bin/head -20 "|" /usr/bin/head "|" /usr/bin/nl "|" /usr/bin/tac ";"
-*/
-
-// valgrind --track-fds=yes ./microshell /usr/bin/pwd ";" cd .. ";" /usr/bin/pwd
 
 int microshell(char **toks, char **envp)
 {
@@ -187,3 +205,97 @@ int	main(int argc, char **argv, char **envp)
 		return (1);
 	return (0);
 }
+
+// $>./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
+// microshell
+// i love my microshell
+
+// ./microshell /usr/bin/sleep 10 "|" /usr/bin/echo a ";" /usr/bin/echo b
+
+// ./microshell /usr/bin/echo a ";" /usr/bin/echo b
+// ./microshell /usr/bin/echo a ";"
+
+/* 
+valgrind --track-fds=yes ./microshell /usr/bin/last 
+"|" /usr/bin/head -20 "|" /usr/bin/head "|" /usr/bin/nl "|" /usr/bin/tac ";"
+*/
+
+// valgrind --track-fds=yes ./microshell /usr/bin/pwd ";" cd .. ";" /usr/bin/pwd
+
+/*
+valgrind --track-fds=yes ./microshell /usr/bin/pwd ";" cd .. ";" /usr/bin/pwd
+";" cd .. ";" /usr/bin/pwd ";" cd .. ";" /usr/bin/pwd 
+*/
+
+
+// int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
+// {	
+// 	pid_t	pid;
+
+// 	if ((pid = fork()) == -1)
+// 		return (-1);
+// 	if (pid == 0)
+// 	{
+// 		if (ct->pi > 0)
+// 			close(pi[0]);
+
+// 		if (ct->cmds > 1)
+// 		{
+// 			dup2(pi[2], 0);
+// 			close(pi[2]);
+// 		}
+// 		if (ct->pi > 0)
+// 		{
+// 			dup2(pi[1], 1);
+// 			close(pi[1]);
+// 		}
+
+// 		execve(*cmd, cmd, envp);
+// 		free(cmd);
+// 		exit(1);
+// 	}
+
+// 	if (ct->pi > 0)
+// 		close(pi[1]);
+// 	if (ct->cmds > 1)
+// 		close(pi[2]);
+
+// 	return (0);
+// }
+
+// int	exec_pipeline(char **toks, char **envp, int *toks_usd)
+// {
+// 	char	**cmd;
+// 	int		pi[3];
+// 	int		wstatus;
+// 	t_cnt	ct;
+// 	int		i;
+	
+// 	i = 0;
+// 	ct.cmds = 0;
+// 	ct.pi = 0;
+// 	while (toks[i] && strncmp(toks[i], ";", 2) != 0)
+// 	{
+// 		if (create_cmd(toks + i, &cmd, &ct) == -1)
+// 			return (-1);
+// 		i += ct.toks;
+// 		if (toks[i] && strncmp(toks[i], "|", 2) == 0)
+// 		{
+// 			// error handling: use picoshell's solution
+// 			if (pipe(pi) == -1) 
+// 				return (ct.cmds > 1 && close(pi[2]), -1);
+// 			ct.pi++;
+// 			i++;
+// 		}
+// 		if (strncmp(*cmd, "cd", 3) == 0)
+// 			builtin_cd(cmd, ct.toks);
+// 		else
+// 			exec_cmd(cmd, &ct, pi, envp);
+// 		free(cmd);
+// 		pi[2] = ct.pi > 0 ? (ct.pi--, pi[0]) : -1;
+// 	}
+	
+// 	for (int j = 0; j < ct.cmds; j++)
+// 		waitpid(-1, &wstatus, 0) == -1;
+// 	return (*toks_usd = i);
+// }
