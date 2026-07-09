@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/08 22:27:56 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/09 23:51:27 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <wait.h>
 #include <string.h>
-// #include <stdbool.h>
 
 typedef struct s_cnt
 {
@@ -41,7 +40,7 @@ int	ft_pipe(int *fds, int *i, t_cnt *ct)
 	return (pipe(fds));
 }
 
-int	builtin_cd(char **cmd, int size, t_cnt *ct)
+int	bi_cd(char **cmd, int size, t_cnt *ct)
 {
 	ct->cmds =- 1;
 	if (size != 2)
@@ -86,58 +85,55 @@ int	fatal_err(void)
 	exit(1);
 }
 
-// 3/07: Error handling is incomplete...
+typedef enum e_flg
+{
+	P0 = (1 << 0), P1 = (1 << 1), P2 = (1 << 2), EX = (1 << 3),
+	P01 = (P0 | P1),
+	P012 = (P0 | P1 | P2),
+	ALL = (EX | P012),
+}	t_flg;
+
+# define CL0(flg) close_all((flg), 0, pi, &ct)
+# define CL1(flg) close_all((flg), 0, pi, ct)
+# define CL1X(flg, ex) close_all((flg | EX), (ex), pi, ct)
+
+int	close_all(int flags, int exitval, int *pi, t_cnt *ct)
+{
+	if ((flags & P2) && ct->cmds > 1)
+		close(pi[2]); 
+	if ((flags & P0) && ct->pi > 0)
+		close(pi[0]);
+	if ((flags & P1) && ct->pi > 0)
+		close(pi[1]);
+	if (flags & EX)
+		exit(exitval);
+	return (0);
+}
 
 int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
 {	
 	pid_t	pid;
 
-	
-
-	
 	if ((pid = fork()) == -1)
 		return (-1);
 	if (pid == 0)
 	{
 		if (ct->pi > 0 && close(pi[0]) == -1)
-			return (-1); // exit
-
-		if (ct->cmds > 1 && dup2(pi[2], 0) == -1)
-			return (-1);
-		if (ct->cmds > 1 && close(pi[2]) == -1)
-			return (-1);
-
-		// if (ct->cmds > 1)
-		// {
-		// 	dup2(pi[2], 0);
-		// 	close(pi[2]);
-		// }
-
-		if (ct->pi > 0 && dup2(pi[1], 1) == -1)
-			return (-1);
-		if (ct->pi > 0 && close(pi[1]) == -1)
-			return (-1);
-
-		// if (ct->pi > 0)
-		// {
-		// 	dup2(pi[1], 1);
-		// 	close(pi[1]);
-		// }
-
-		
-		// 8/07: Error handling, again... And again.
+			CL1X(P012, 1);
+		if (ct->cmds > 1 && (dup2(pi[2], 0) == -1 || close(pi[2]) == -1))
+			CL1X(P1 | P2, 1);
+		if (ct->pi > 0 && (dup2(pi[1], 1) == -1 || close(pi[1]) == -1))
+			CL1X(P1, 1);
 		execve(*cmd, cmd, envp);
 		write(2, "error: cannot execute ", 22);
 		write(2, *cmd, ft_strlen(*cmd));
 		free(cmd);
 		exit(1);
 	}
-
 	if (ct->pi > 0 && close(pi[1]) == -1)
-		return (-1);
+		return (CL1(P012), -1);
 	if (ct->cmds > 1 && close(pi[2]) == -1)
-		return (-1);
-
+		return (CL1(P0 | P2), -1);
 	return (0);
 }
 
@@ -150,8 +146,7 @@ int	wait_pipeline(t_cnt *ct)
 
 	errors = 0;
 	for (int j = 0; j < ct->cmds; j++)
-		if (waitpid(-1, &wstatus, 0) == -1
-			|| WEXITSTATUS(wstatus) == 1)
+		if (waitpid(-1, &wstatus, 0) == -1 || WEXITSTATUS(wstatus) == 1)
 			errors++;
 	if (errors > 0)
 		return (-1);
@@ -160,29 +155,30 @@ int	wait_pipeline(t_cnt *ct)
 
 // 3/07, 8/07: Error handling is still incomplete... 
 // Where are the error messages?
+
+// 9/07: Problems on
+// ./microshell /usr/bin/echo a ";" /usr/bin/echo b
+
 int	exec_pipeline(char **toks, char **envp, int *toks_usd)
 {
 	char	**cmd;
 	int		pi[3];
 	t_cnt	ct;
 	int		i;
-	int		is_blt;
+	int		is_bi;
 
 	i = 0;
 	ct.cmds = 0;
 	while (toks[i] && strncmp(toks[i], ";", 2))
 	{
 		if (create_cmd(toks + i, &cmd, &ct) == -1)
-			return (-1);
+			return (CL0(P2), -1);
 		i += ct.toks;
-		if (toks[i] && !strncmp(toks[i], "|", 2)
-			&& ft_pipe(pi, &i, &ct) == -1)
-			return (-1); // ct.cmds > 1 && close(pi[2]), 
-		if ((is_blt = !strncmp(*cmd, "cd", 3))
-			&& builtin_cd(cmd, ct.toks, &ct) == -1)
-			return (-1);
-		if (is_blt == 0
-			&& exec_cmd(cmd, &ct, pi, envp) == -1)
+		if (toks[i] && !strncmp(toks[i], "|", 2) && ft_pipe(pi, &i, &ct) == -1)
+			return (CL0(P2), -1);
+		if ((is_bi = !strncmp(*cmd, "cd", 3)) && bi_cd(cmd, ct.toks, &ct) == -1)
+			return (CL0(P012), -1);
+		if (!is_bi && exec_cmd(cmd, &ct, pi, envp) == -1)
 			return (-1);
 		free(cmd);
 		pi[2] = ct.pi > 0 ? (ct.pi--, pi[0]) : -1;
