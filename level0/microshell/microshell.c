@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 23:08:19 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 23:26:32 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,9 @@ int	main(int argc, char **argv, char **envp)
 	if (argc == 1)
 		return (1);
 
-	// 10/07: 	
+	// 10/07: The idea is to have multiple error codes for the different kind
+	// of errors. When an error is system call related, it should propagate to
+	// here and fatal_err should be executed.
 	if ((exv = microshell(++argv, envp)) == -1)
 		return (2);
 	if (exv == -2)

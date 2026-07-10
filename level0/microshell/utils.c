@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:06:03 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 20:39:24 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 23:25:36 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int	ft_pipe(int *fds, int *i, t_cnt *ct)
 int	fatal_err(void)
 {
 	write(2, "error: fatal\n", 14);
-	exit(1);
+	exit(1); // 10/07: necessary my dude?
 }
 
 int	close_all(int flags, int exitval, int *pi, t_cnt *ct)
