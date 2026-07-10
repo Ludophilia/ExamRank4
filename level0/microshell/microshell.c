@@ -6,14 +6,13 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 22:30:45 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 23:08:19 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "microshell.h"
 
 /*
-
 valgrind --track-fds=yes ./microshell /bin/ls "|" /usr/bin/grep microshell ";" /bin/echo i love my microshell
 
 valgrind --track-fds=yes ./microshell /usr/bin/last "|" /usr/bin/head -20 "|" /usr/bin/head "|" /usr/bin/nl "|" /usr/bin/tac ";"
@@ -32,7 +31,6 @@ valgrind --track-fds=yes ./microshell /usr/bin/nukeall 0
 valgrind --track-fds=yes ./microshell cd
 
 valgrind --track-fds=yes ./microshell cd 1 2 3
-
 */
 
 int microshell(char **toks, char **envp)
@@ -54,8 +52,18 @@ int microshell(char **toks, char **envp)
 
 int	main(int argc, char **argv, char **envp)
 {
-	if (argc == 1
-		|| microshell(++argv, envp) == -1)
+	// - If a system call, except execve and chdir, returns an error your program should immediatly print "error: fatal" in STDERR followed by a '\n' and the program should exit
+	int exv;
+
+	if (argc == 1)
 		return (1);
+
+	// 10/07: 	
+	if ((exv = microshell(++argv, envp)) == -1)
+		return (2);
+	if (exv == -2)
+		return (3);
+
+	
 	return (0);
 }
