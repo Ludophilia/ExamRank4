@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:03:27 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 19:25:06 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 22:11:46 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # define CL0(flg) close_all((flg), 0, pi, &ct)
 # define CL1(flg) close_all((flg), 0, pi, ct)
 # define CL1X(flg, ex) close_all((flg | EX), (ex), pi, ct)
+# define FR free
 
 typedef struct s_cnt
 {

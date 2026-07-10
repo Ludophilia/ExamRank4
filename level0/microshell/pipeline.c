@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:06:39 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 21:00:52 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 22:11:26 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,11 @@ int	exec_pipeline(char **toks, char **envp, int *toks_usd)
 			return (CL0(P2), -1);
 		i += ct.toks;
 		if (toks[i] && !strncmp(toks[i], "|", 2) && ft_pipe(pi, &i, &ct) == -1)
-			return (CL0(P2), -1);
+			return (FR(cmd), CL0(P2), -1);
 		if ((is_bi = !strncmp(*cmd, "cd", 3)) && bi_cd(cmd, ct.toks, &ct) == -1)
-			return (CL0(P012), -1);
+			return (FR(cmd), CL0(P012), -1);
 		if (!is_bi && exec_cmd(cmd, &ct, pi, envp) == -1)
-			return (-1);
+			return (FR(cmd), -1);
 		free(cmd);
 		pi[2] = ct.pi > 0 ? (ct.pi--, pi[0]) : -1;
 	}

@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:09:49 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 20:30:42 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 21:32:37 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ int	create_cmd(char **toks, char ***cmd, t_cnt *ct)
 }
 
 int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
-{	
+{
 	pid_t	pid;
 
 	if ((pid = fork()) == -1)

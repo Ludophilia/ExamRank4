@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 21:12:38 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/10 22:30:45 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,6 @@ valgrind --track-fds=yes ./microshell /usr/bin/echo a ";" /usr/bin/echo b
 valgrind --track-fds=yes ./microshell /usr/bin/echo a ";"
 
 valgrind --track-fds=yes ./microshell /usr/bin/nukeall 0
-
-//////////////////////////////////////////////////////////////////////////
-
-10/10: Close to the end. Please make this work.
 
 valgrind --track-fds=yes ./microshell cd
 
