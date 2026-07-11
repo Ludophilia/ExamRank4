@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:09:49 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 23:04:01 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/11 20:37:22 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,14 @@ int	bi_cd(char **cmd, int size, t_cnt *ct)
 	if (size != 2)
 	{
 		write(2, "error: cd: bad arguments\n", 25);
-		return (-1);
+		return (-2);
 	}
-	if (chdir(cmd[1]) == -1) // Not fatal error
+	if (chdir(cmd[1]) == -1)
 	{
 		write(2, "error: cd: cannot change directory to ", 38);
 		write(2, cmd[1], ft_strlen(cmd[1]));
 		write(2, "\n", 1);
-		return (-1);
+		return (-2);
 	}
 	return (0);
 }
@@ -65,7 +65,7 @@ int exec_cmd(char **cmd, t_cnt *ct, int *pi, char **envp)
 			CL1X(P1 | P2, 1);
 		if (ct->pi > 0 && (dup2(pi[1], 1) == -1 || close(pi[1]) == -1))
 			CL1X(P1, 1);
-		execve(*cmd, cmd, envp);  // Not fatal error
+		execve(*cmd, cmd, envp);
 		write(2, "error: cannot execute ", 22);
 		write(2, *cmd, ft_strlen(*cmd));
 		write(2, "\n", 1);

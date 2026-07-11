@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 19:03:27 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 22:11:46 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/11 20:44:06 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,9 @@ typedef enum e_flg
 
 int		ft_strlen(char *str);
 int		ft_pipe(int *fds, int *i, t_cnt *ct);
-int		fatal_err(void);
+void	fatal(void);
 int		close_all(int flags, int exitval, int *pi, t_cnt *ct);
 
-int		wait_pipeline(t_cnt *ct);
 int		exec_pipeline(char **toks, char **envp, int *toks_usd);
 
 int		bi_cd(char **cmd, int size, t_cnt *ct);

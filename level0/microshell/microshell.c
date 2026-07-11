@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/10 23:26:32 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/11 20:43:36 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,13 @@ int microshell(char **toks, char **envp)
 {
 	int		i;
 	t_cnt	ct;
+	int		exv;
 
 	i = 0;
 	while (toks[i])
 	{
-		if (exec_pipeline(toks + i, envp, &ct.toks) == -1)
-			return (-1);
+		if ((exv = exec_pipeline(toks + i, envp, &ct.toks)) < 0)
+			return (exv);
 		i += ct.toks;
 		if (toks[i] && !strncmp(toks[i], ";", 2))
 			i++;
@@ -52,20 +53,13 @@ int microshell(char **toks, char **envp)
 
 int	main(int argc, char **argv, char **envp)
 {
-	// - If a system call, except execve and chdir, returns an error your program should immediatly print "error: fatal" in STDERR followed by a '\n' and the program should exit
-	int exv;
+	int		exv;
 
 	if (argc == 1)
 		return (1);
-
-	// 10/07: The idea is to have multiple error codes for the different kind
-	// of errors. When an error is system call related, it should propagate to
-	// here and fatal_err should be executed.
 	if ((exv = microshell(++argv, envp)) == -1)
-		return (2);
+		return (fatal(), 2);
 	if (exv == -2)
 		return (3);
-
-	
 	return (0);
 }
