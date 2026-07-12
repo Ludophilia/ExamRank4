@@ -20,7 +20,7 @@
 // node *n(**s); // ???
 
 // TREE
-node    *new_node(t_noty type)
+node    *new_node(t_nty type)
 {
 	node *ret = calloc(1, sizeof(node));
 	if (!ret)

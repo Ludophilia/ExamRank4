@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/02 21:48:57 by jegerman          #+#    #+#             */
-/*   Updated: 2026/04/06 18:40:39 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/12 14:52:34 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,30 +22,30 @@ typedef enum e_nodetype
 	ADD,
 	MULTI,
 	VAL
-}	t_noty;
+}	t_nty;
 
 typedef struct node
 {
-	t_noty			type;
+	t_nty			type;
 	int				val;
 	struct node 	*l;
 	struct node 	*r;
 }	node;
 
 // TREE
-node    *new_node(t_noty type);
+node    *new_node(t_nty type);
 void    destroy_tree(node *n);
 
-// ERROR
+// ERROR + PARSING
 
 void    unexpected(char c);
 int		accept(char **s, char c);
 int		expect(char **s, char c);
 
-// PARSING
 node    *parse_expr(char **s);
 node	*parse_term(char **s);
 node	*parse_factor(char **s);
+node	*parse_digit(char **s);
 
 // EVAL
 int		eval_tree(node *tree);
