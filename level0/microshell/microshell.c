@@ -6,7 +6,7 @@
 /*   By: jegerman <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 16:00:16 by jegerman          #+#    #+#             */
-/*   Updated: 2026/07/11 20:43:36 by jegerman         ###   ########.fr       */
+/*   Updated: 2026/07/12 13:13:59 by jegerman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ valgrind --track-fds=yes ./microshell /usr/bin/nukeall 0
 valgrind --track-fds=yes ./microshell cd
 
 valgrind --track-fds=yes ./microshell cd 1 2 3
+
+valgrind --track-fds=yes ./microshell cd /weed
 */
 
 int microshell(char **toks, char **envp)
