@@ -95,7 +95,6 @@ int	expect(FILE *stream, char c)
 
 // SERIALIZATION: flatten the json in a series of character strings 
 // for display on the terminal.
-
 void	serialize(json j)
 {
 	switch (j.type)
@@ -128,18 +127,25 @@ void	serialize(json j)
 	}
 }
 
-// int	main(int argc, char **argv)
-// {
-// 	if (argc != 2)
-// 		return 1;
-// 	char *filename = argv[1];
-// 	FILE *stream = fopen(filename, "r");
-// 	json	file;
-// 	if (argo (&file, stream) != 1)
-// 	{
-// 		free_json(file);
-// 		return 1;
-// 	}
-// 	serialize(file);
-// 	printf("\n");
-// }
+int	main(int argc, char **argv)
+{
+	if (argc != 2)
+		return (1);
+
+	// char 	*filename = argv[1]; // Personal addition
+	json	file;
+	FILE	*stream = fopen(argv[1], "r");
+
+	if (argo(&file, stream) != 1)
+	{
+		free_json(file); 
+		fclose(stream); // ...
+		return (1);
+	}
+
+	serialize(file);
+	printf("\n");
+
+	free_json(file); // ...
+	fclose(stream); // ...
+}

@@ -48,5 +48,7 @@ $> echo -n '{"no value?":}' | ./argo /dev/stdin | cat -e
 unexpected token '}'$
 $> echo -n '{"no other value?":1,}' | ./argo /dev/stdin | cat -e
 unexpected token ','$ 
-	=> What!?? The unexpected token is '}'. We expect another key-value pair after
-	a ',', not at a map symbol terminator.
+	=> [jegerman]: What!?? The unexpected token is '}'. We expect another
+	key-value pair after a ',', not at a map symbol terminator.
+	=> [Assignment]: Tested with the main, the output should be exactly the same 
+	as the input (EXCEPT for ERRORS).

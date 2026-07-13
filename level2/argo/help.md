@@ -1,24 +1,35 @@
 
-# Can you use the examples and show how the json is translated from its
-# javascript / rfc8259 form to its C form? 
+# Help for Argo
 
-=> From the struct definitions alone, I just can't see how those two come together... 
+# Grammar
 
-## EXAMPLES:
+Please try to write the grammar... from the top level down to
+the terminals...
 
-### Numbers
+What contains what basically, what are the terminals, where is the mutual 
+recursion case that justifies RECURSIVE descent parsing...
+
+value ::= integer | string | map
+map ::= '{'(pair(','pair)*)?'}'
+pair ::= string ':' value
+
+integer ::= '-'?digit+
+string ::= '"'character*'"'
+
+digit ::= '0' | ... | '9'
+character ::= ascii<32,127>
+ascii<32,127> ::=  ' ' | ... | DEL
+
+# Examples
+
+Can you use the examples and show how the json is translated from its
+javascript / rfc8259 form to its C form?
 
 '1'
 => (json){.type = INTEGER, .integer = 1};
 
-### Strings
-
 '"bonjour"'
 => (json){.type = STRING, .string = "bonjour"};
-
-### Maps
-
-#### Map 1
 
 '{"tomatoes":42,"potatoes":234}'
 => (json){
@@ -32,8 +43,6 @@
 	}
 }
 => size 2 because there's 1 comma in the JSON object
-
-#### Map 2
 
 '{"recursion":{"recursion":{"recursion":{"recursion":"recursion"}}}}'
 OR
@@ -83,22 +92,3 @@ OR
 	}
 }
 => size 1 because there's 1 key, 0 comma in the JSON object
-
-## GRAMMAR
-
-Please now try to write the grammar... from the top level down to
-the terminals...
-
-What contains what basically, what are the terminals, where is the mutual 
-recursion case that justifies RECURSIVE descent parsing...
-
-value ::= integer | string | map
-map ::= '{' (pair (',' pair)*)? '}'
-pair ::= string ':' value
-
-integer ::= '-'?digit+
-string ::= '"'character*'"'
-
-digit ::= '0' | ... | '9'
-character ::= ascii<32,127>
-ascii<32,127> ::=  ' ' | ... | DEL 
